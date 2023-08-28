@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 27/08/2023 14:36:03
+ Date: 28/08/2023 17:30:28
 */
 
 
@@ -54,7 +54,6 @@ CREATE TABLE "public"."Customer" (
 -- ----------------------------
 -- Records of Customer
 -- ----------------------------
-INSERT INTO "public"."Customer" VALUES (1, 'Sawtooth', 'test', 'test', 1);
 
 -- ----------------------------
 -- Table structure for Role
@@ -69,8 +68,8 @@ CREATE TABLE "public"."Role" (
 -- ----------------------------
 -- Records of Role
 -- ----------------------------
-INSERT INTO "public"."Role" VALUES (1, 'user');
-INSERT INTO "public"."Role" VALUES (2, 'admin');
+INSERT INTO "public"."Role" VALUES (4, 'user');
+INSERT INTO "public"."Role" VALUES (5, 'admin');
 
 -- ----------------------------
 -- Function structure for create_customer_table
@@ -105,6 +104,8 @@ CREATE OR REPLACE FUNCTION "public"."create_role_table"()
 		"roleID" serial PRIMARY KEY,
 		name varchar(30)
 	);
+	
+	INSERT INTO "Role" (name) VALUES("user");
 
 	RETURN;
 END$BODY$
@@ -112,13 +113,15 @@ END$BODY$
   COST 100;
 
 -- ----------------------------
--- Function structure for insert_customer
+-- Function structure for insert_default_customer
 -- ----------------------------
-DROP FUNCTION IF EXISTS "public"."insert_customer"("name" varchar, "password" varchar, "email" varchar);
-CREATE OR REPLACE FUNCTION "public"."insert_customer"("name" varchar, "password" varchar, "email" varchar)
+DROP FUNCTION IF EXISTS "public"."insert_default_customer"("name" varchar, "password" varchar, "email" varchar);
+CREATE OR REPLACE FUNCTION "public"."insert_default_customer"("name" varchar, "password" varchar, "email" varchar)
   RETURNS "pg_catalog"."void" AS $BODY$BEGIN
 	
-	INSERT INTO "Customer" (name, "passwordHash", email) VALUES(name, password, email);
+	INSERT INTO "Customer" (name, "passwordHash", email, "roleID")
+		VALUES(name, password, email,
+		 (SELECT "roleID" FROM "Role" WHERE "Role".name = 'user' LIMIT 1));
 
 	RETURN;
 END$BODY$
@@ -163,14 +166,14 @@ END$BODY$
 -- ----------------------------
 ALTER SEQUENCE "public"."Customer_customerID_seq"
 OWNED BY "public"."Customer"."customerID";
-SELECT setval('"public"."Customer_customerID_seq"', 2, true);
+SELECT setval('"public"."Customer_customerID_seq"', 5, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."Role_roleID_seq"
 OWNED BY "public"."Role"."roleID";
-SELECT setval('"public"."Role_roleID_seq"', 3, true);
+SELECT setval('"public"."Role_roleID_seq"', 6, true);
 
 -- ----------------------------
 -- Primary Key structure for table Customer
