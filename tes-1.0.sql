@@ -1,7 +1,7 @@
 /*
  Navicat Premium Data Transfer
 
- Source Server         : localhost_postgres
+ Source Server         : PostgreSQL
  Source Server Type    : PostgreSQL
  Source Server Version : 150001
  Source Host           : localhost:5432
@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 02/09/2023 19:52:55
+ Date: 17/10/2023 17:37:49
 */
 
 
@@ -50,10 +50,32 @@ START 1
 CACHE 1;
 
 -- ----------------------------
+-- Sequence structure for RoomCustomer_variant_seq
+-- ----------------------------
+DROP SEQUENCE IF EXISTS "public"."RoomCustomer_variant_seq";
+CREATE SEQUENCE "public"."RoomCustomer_variant_seq" 
+INCREMENT 1
+MINVALUE  1
+MAXVALUE 2147483647
+START 1
+CACHE 1;
+
+-- ----------------------------
 -- Sequence structure for RoomSolution_roomSolutionID_seq
 -- ----------------------------
 DROP SEQUENCE IF EXISTS "public"."RoomSolution_roomSolutionID_seq";
 CREATE SEQUENCE "public"."RoomSolution_roomSolutionID_seq" 
+INCREMENT 1
+MINVALUE  1
+MAXVALUE 2147483647
+START 1
+CACHE 1;
+
+-- ----------------------------
+-- Sequence structure for RoomTaskVariant_roomTaskVariantID_seq
+-- ----------------------------
+DROP SEQUENCE IF EXISTS "public"."RoomTaskVariant_roomTaskVariantID_seq";
+CREATE SEQUENCE "public"."RoomTaskVariant_roomTaskVariantID_seq" 
 INCREMENT 1
 MINVALUE  1
 MAXVALUE 2147483647
@@ -99,6 +121,7 @@ CREATE TABLE "public"."Customer" (
 -- Records of Customer
 -- ----------------------------
 INSERT INTO "public"."Customer" VALUES (6, 'zalupa', '$2a$10$bft2fzlgly/2ekNn5kz8Q.4YWFHDYdpXUi6hx/0n31G554JhiivAW', 'idinaxui', 4);
+INSERT INTO "public"."Customer" VALUES (8, 'Sawtooth', '$2a$10$.6QS9ezRz6WSo5NMZkhoyetJVDyBASPXMkQXNDJ.1ZH4DpDp2gq/G', 'andrey.y96@mail.ru', 4);
 
 -- ----------------------------
 -- Table structure for Role
@@ -138,13 +161,15 @@ DROP TABLE IF EXISTS "public"."RoomCustomer";
 CREATE TABLE "public"."RoomCustomer" (
   "roomCustomerID" int4 NOT NULL DEFAULT nextval('"RoomCustomer_roomCustomerID_seq"'::regclass),
   "roomID" int4,
-  "customerID" int4
+  "customerID" int4,
+  "variant" int4 NOT NULL DEFAULT nextval('"RoomCustomer_variant_seq"'::regclass)
 )
 ;
 
 -- ----------------------------
 -- Records of RoomCustomer
 -- ----------------------------
+INSERT INTO "public"."RoomCustomer" VALUES (1, 1, 6, 1);
 
 -- ----------------------------
 -- Table structure for RoomSolution
@@ -160,6 +185,9 @@ CREATE TABLE "public"."RoomSolution" (
 -- ----------------------------
 -- Records of RoomSolution
 -- ----------------------------
+INSERT INTO "public"."RoomSolution" VALUES (3, 1, 'D:\TES\solutions\1\1\zalupa\sources');
+INSERT INTO "public"."RoomSolution" VALUES (4, 1, 'D:\TES\solutions\1\11\anonymousUser\sources');
+INSERT INTO "public"."RoomSolution" VALUES (5, 1, 'D:\TES\solutions\1\11\zalupa\sources');
 
 -- ----------------------------
 -- Table structure for RoomTask
@@ -168,13 +196,31 @@ DROP TABLE IF EXISTS "public"."RoomTask";
 CREATE TABLE "public"."RoomTask" (
   "roomTaskID" int4 NOT NULL DEFAULT nextval('"RoomTask_roomTaskID_seq"'::regclass),
   "roomID" int4,
-  "path" varchar(50) COLLATE "pg_catalog"."default"
+  "path" varchar(50) COLLATE "pg_catalog"."default",
+  "name" varchar(50) COLLATE "pg_catalog"."default"
 )
 ;
 
 -- ----------------------------
 -- Records of RoomTask
 -- ----------------------------
+INSERT INTO "public"."RoomTask" VALUES (11, 1, 'D:/TES/tasks/1/Test/1', 'Test');
+
+-- ----------------------------
+-- Table structure for RoomTaskVariant
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."RoomTaskVariant";
+CREATE TABLE "public"."RoomTaskVariant" (
+  "roomTaskVariantID" int4 NOT NULL DEFAULT nextval('"RoomTaskVariant_roomTaskVariantID_seq"'::regclass),
+  "roomTaskID" int4,
+  "variant" int4
+)
+;
+
+-- ----------------------------
+-- Records of RoomTaskVariant
+-- ----------------------------
+INSERT INTO "public"."RoomTaskVariant" VALUES (1, 11, 1);
 
 -- ----------------------------
 -- Function structure for create_customer_table
@@ -185,7 +231,7 @@ CREATE OR REPLACE FUNCTION "public"."create_customer_table"()
 	
 	CREATE TABLE "Customer" (
 		"customerID" serial PRIMARY KEY,
-		name varchar(30),
+		name varchar(30) UNIQUE,
 		"passwordHash" varchar(255),
 		email varchar(50),
 		"roleID" int4,
@@ -228,6 +274,7 @@ CREATE OR REPLACE FUNCTION "public"."create_room_customer_table"()
 		"roomCustomerID" serial PRIMARY KEY,
 		"roomID" int4,
 		"customerID" int4,
+		"variant" serial,
 		
 		FOREIGN KEY ("roomID") REFERENCES "Room" ("roomID") ON UPDATE CASCADE ON DELETE CASCADE,
 		FOREIGN KEY ("customerID") REFERENCES "Customer" ("customerID") ON UPDATE CASCADE ON DELETE CASCADE
@@ -285,9 +332,32 @@ CREATE OR REPLACE FUNCTION "public"."create_room_task_table"()
 	CREATE TABLE "RoomTask" (
 		"roomTaskID" serial PRIMARY KEY,
 		"roomID" int4,
+		"name" varchar(50),
 		"path" varchar(50),
 		
-		FOREIGN KEY ("roomID") REFERENCES "Room" ("roomID") ON UPDATE CASCADE ON DELETE CASCADE
+		FOREIGN KEY ("roomID") REFERENCES "Room" ("roomID") ON UPDATE CASCADE ON DELETE CASCADE,
+		CONSTRAINT room_task_path_uniq UNIQUE("roomID", "path"),
+		CONSTRAINT room_task_name_uniq UNIQUE("name")
+	);
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
+-- Function structure for create_room_task_variant_table
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."create_room_task_variant_table"();
+CREATE OR REPLACE FUNCTION "public"."create_room_task_variant_table"()
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	CREATE TABLE "RoomTaskVariant" (
+		"roomTaskVariantID" serial PRIMARY KEY,
+		"roomTaskID" int4,
+		"variant" int4,
+		
+		FOREIGN KEY ("roomTaskID") REFERENCES "RoomTask" ("roomTaskID") ON UPDATE CASCADE ON DELETE CASCADE
 	);
 
 	RETURN;
@@ -346,7 +416,6 @@ CREATE OR REPLACE FUNCTION "public"."get_room_customer_by_id"("id" int4)
 
 	RETURN QUERY SELECT * FROM "RoomCustomer" WHERE "RoomCustomer"."roomCustomerID" = "id";
 
-	RETURN;
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
@@ -361,7 +430,20 @@ CREATE OR REPLACE FUNCTION "public"."get_room_solution_by_id"("id" int4)
 	
 	RETURN QUERY SELECT * FROM "RoomSolution" WHERE "RoomSolution"."roomSolutionID" = "id";
 
-	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_room_task
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_task"("room_id" int4, "task_path" varchar);
+CREATE OR REPLACE FUNCTION "public"."get_room_task"("room_id" int4, "task_path" varchar)
+  RETURNS SETOF "public"."RoomTask" AS $BODY$BEGIN
+	
+	RETURN QUERY SELECT * FROM "RoomTask" WHERE "RoomTask"."roomID" = "room_id" AND "RoomTask"."path" = "task_path";
+	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
@@ -373,13 +455,43 @@ END$BODY$
 DROP FUNCTION IF EXISTS "public"."get_room_task_by_id"("id" int4);
 CREATE OR REPLACE FUNCTION "public"."get_room_task_by_id"("id" int4)
   RETURNS SETOF "public"."RoomTask" AS $BODY$BEGIN
-
+	
 	RETURN QUERY SELECT * FROM "RoomTask" WHERE "RoomTask"."roomTaskID" = "id";
 	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
   ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_room_task_variant_by_id
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_task_variant_by_id"("id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_task_variant_by_id"("id" int4)
+  RETURNS SETOF "public"."RoomTaskVariant" AS $BODY$BEGIN
+	
+	RETURN QUERY SELECT * FROM "RoomTaskVariant" WHERE "RoomTaskVariant"."roomTaskVariantID" = "id";
+
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_variant
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_variant"("customer_name" varchar, "room_id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_variant"("customer_name" varchar, "room_id" int4)
+  RETURNS "pg_catalog"."int4" AS $BODY$BEGIN
+	
+	RETURN (SELECT "variant" FROM "RoomCustomer" AS rc
+		LEFT JOIN "Customer" ON "Customer"."customerID" = rc."customerID"
+		WHERE rc."roomID" = "room_id" AND "Customer"."name" = "customer_name" LIMIT 1);
+		
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
 
 -- ----------------------------
 -- Function structure for insert_default_customer
@@ -456,11 +568,25 @@ END$BODY$
 -- ----------------------------
 -- Function structure for insert_room_task
 -- ----------------------------
-DROP FUNCTION IF EXISTS "public"."insert_room_task"("roomID" int4, "path" varchar);
-CREATE OR REPLACE FUNCTION "public"."insert_room_task"("roomID" int4, "path" varchar)
+DROP FUNCTION IF EXISTS "public"."insert_room_task"("roomID" int4, "name" varchar, "path" varchar);
+CREATE OR REPLACE FUNCTION "public"."insert_room_task"("roomID" int4, "name" varchar, "path" varchar)
   RETURNS "pg_catalog"."void" AS $BODY$BEGIN
 	
-	INSERT INTO "RoomTask" ("roomID", "path") VALUES ("roomID", "path");
+	INSERT INTO "RoomTask" ("roomID", "name", "path") VALUES ("roomID", "name", "path");
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
+-- Function structure for insert_room_task_variant
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."insert_room_task_variant"("roomTaskID" int4, "variant" int4);
+CREATE OR REPLACE FUNCTION "public"."insert_room_task_variant"("roomTaskID" int4, "variant" int4)
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	INSERT INTO "RoomTaskVariant" ("roomTaskID", "variant") VALUES ("roomTaskID", "variant");
 
 	RETURN;
 END$BODY$
@@ -505,42 +631,56 @@ END$BODY$
 -- ----------------------------
 ALTER SEQUENCE "public"."Customer_customerID_seq"
 OWNED BY "public"."Customer"."customerID";
-SELECT setval('"public"."Customer_customerID_seq"', 7, true);
+SELECT setval('"public"."Customer_customerID_seq"', 9, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."Role_roleID_seq"
 OWNED BY "public"."Role"."roleID";
-SELECT setval('"public"."Role_roleID_seq"', 6, true);
+SELECT setval('"public"."Role_roleID_seq"', 7, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomer_roomCustomerID_seq"
 OWNED BY "public"."RoomCustomer"."roomCustomerID";
-SELECT setval('"public"."RoomCustomer_roomCustomerID_seq"', 2, false);
+SELECT setval('"public"."RoomCustomer_roomCustomerID_seq"', 2, true);
+
+-- ----------------------------
+-- Alter sequences owned by
+-- ----------------------------
+ALTER SEQUENCE "public"."RoomCustomer_variant_seq"
+OWNED BY "public"."RoomCustomer"."variant";
+SELECT setval('"public"."RoomCustomer_variant_seq"', 2, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomSolution_roomSolutionID_seq"
 OWNED BY "public"."RoomSolution"."roomSolutionID";
-SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 2, false);
+SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 6, true);
+
+-- ----------------------------
+-- Alter sequences owned by
+-- ----------------------------
+ALTER SEQUENCE "public"."RoomTaskVariant_roomTaskVariantID_seq"
+OWNED BY "public"."RoomTaskVariant"."roomTaskVariantID";
+SELECT setval('"public"."RoomTaskVariant_roomTaskVariantID_seq"', 2, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomTask_roomTaskID_seq"
 OWNED BY "public"."RoomTask"."roomTaskID";
-SELECT setval('"public"."RoomTask_roomTaskID_seq"', 5, true);
+SELECT setval('"public"."RoomTask_roomTaskID_seq"', 12, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."Room_roomID_seq"
 OWNED BY "public"."Room"."roomID";
-SELECT setval('"public"."Room_roomID_seq"', 2, false);
+SELECT setval('"public"."Room_roomID_seq"', 3, false);
 
 -- ----------------------------
 -- Primary Key structure for table Customer
@@ -568,9 +708,19 @@ ALTER TABLE "public"."RoomCustomer" ADD CONSTRAINT "RoomCustomer_pkey" PRIMARY K
 ALTER TABLE "public"."RoomSolution" ADD CONSTRAINT "RoomSolution_pkey" PRIMARY KEY ("roomSolutionID");
 
 -- ----------------------------
+-- Uniques structure for table RoomTask
+-- ----------------------------
+ALTER TABLE "public"."RoomTask" ADD CONSTRAINT "room_path_uniq" UNIQUE ("roomID", "path");
+
+-- ----------------------------
 -- Primary Key structure for table RoomTask
 -- ----------------------------
 ALTER TABLE "public"."RoomTask" ADD CONSTRAINT "RoomTask_pkey" PRIMARY KEY ("roomTaskID");
+
+-- ----------------------------
+-- Primary Key structure for table RoomTaskVariant
+-- ----------------------------
+ALTER TABLE "public"."RoomTaskVariant" ADD CONSTRAINT "RoomTaskVariant_pkey" PRIMARY KEY ("roomTaskVariantID");
 
 -- ----------------------------
 -- Foreign Keys structure for table Customer
@@ -592,3 +742,8 @@ ALTER TABLE "public"."RoomSolution" ADD CONSTRAINT "RoomSolution_roomID_fkey" FO
 -- Foreign Keys structure for table RoomTask
 -- ----------------------------
 ALTER TABLE "public"."RoomTask" ADD CONSTRAINT "RoomTask_roomID_fkey" FOREIGN KEY ("roomID") REFERENCES "public"."Room" ("roomID") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- ----------------------------
+-- Foreign Keys structure for table RoomTaskVariant
+-- ----------------------------
+ALTER TABLE "public"."RoomTaskVariant" ADD CONSTRAINT "RoomTaskVariant_roomTaskID_fkey" FOREIGN KEY ("roomTaskID") REFERENCES "public"."RoomTask" ("roomTaskID") ON DELETE CASCADE ON UPDATE CASCADE;
