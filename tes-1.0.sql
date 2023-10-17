@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 17/10/2023 17:37:49
+ Date: 17/10/2023 22:13:27
 */
 
 
@@ -374,6 +374,36 @@ CREATE OR REPLACE FUNCTION "public"."get_customer_by_id"("id" int4)
 
 	RETURN QUERY SELECT * FROM "Customer" WHERE "Customer"."customerID" = "id";
 
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_customer_by_name
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_customer_by_name"("customer_name" varchar);
+CREATE OR REPLACE FUNCTION "public"."get_customer_by_name"("customer_name" varchar)
+  RETURNS SETOF "public"."Customer" AS $BODY$BEGIN
+
+	RETURN QUERY SELECT * FROM "Customer" WHERE "Customer"."name" = "customer_name";
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_customer_rooms
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_customer_rooms"("id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_customer_rooms"("id" int4)
+  RETURNS SETOF "public"."Room" AS $BODY$BEGIN
+	
+	RETURN QUERY SELECT "Room"."roomID", "Room"."name" FROM "Room"
+		LEFT JOIN "RoomCustomer" AS rc ON "Room"."roomID" = rc."roomID"
+		WHERE rc."customerID" = "id";
+	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
