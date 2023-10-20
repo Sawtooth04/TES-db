@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 19/10/2023 20:56:48
+ Date: 20/10/2023 21:53:32
 */
 
 
@@ -39,6 +39,17 @@ START 1
 CACHE 1;
 
 -- ----------------------------
+-- Sequence structure for RoomCustomerRole_roomCustomerRoleID_seq
+-- ----------------------------
+DROP SEQUENCE IF EXISTS "public"."RoomCustomerRole_roomCustomerRoleID_seq";
+CREATE SEQUENCE "public"."RoomCustomerRole_roomCustomerRoleID_seq" 
+INCREMENT 1
+MINVALUE  1
+MAXVALUE 2147483647
+START 1
+CACHE 1;
+
+-- ----------------------------
 -- Sequence structure for RoomCustomer_roomCustomerID_seq
 -- ----------------------------
 DROP SEQUENCE IF EXISTS "public"."RoomCustomer_roomCustomerID_seq";
@@ -54,6 +65,17 @@ CACHE 1;
 -- ----------------------------
 DROP SEQUENCE IF EXISTS "public"."RoomCustomer_variant_seq";
 CREATE SEQUENCE "public"."RoomCustomer_variant_seq" 
+INCREMENT 1
+MINVALUE  1
+MAXVALUE 2147483647
+START 1
+CACHE 1;
+
+-- ----------------------------
+-- Sequence structure for RoomRole_roomRoleID_seq
+-- ----------------------------
+DROP SEQUENCE IF EXISTS "public"."RoomRole_roomRoleID_seq";
+CREATE SEQUENCE "public"."RoomRole_roomRoleID_seq" 
 INCREMENT 1
 MINVALUE  1
 MAXVALUE 2147483647
@@ -153,7 +175,7 @@ CREATE TABLE "public"."Room" (
 -- ----------------------------
 -- Records of Room
 -- ----------------------------
-INSERT INTO "public"."Room" VALUES (12, 'Test room', 6);
+INSERT INTO "public"."Room" VALUES (15, 'Test Room', 6);
 
 -- ----------------------------
 -- Table structure for RoomCustomer
@@ -170,7 +192,39 @@ CREATE TABLE "public"."RoomCustomer" (
 -- ----------------------------
 -- Records of RoomCustomer
 -- ----------------------------
-INSERT INTO "public"."RoomCustomer" VALUES (2, 12, 6, 2);
+INSERT INTO "public"."RoomCustomer" VALUES (5, 15, 6, 5);
+
+-- ----------------------------
+-- Table structure for RoomCustomerRole
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."RoomCustomerRole";
+CREATE TABLE "public"."RoomCustomerRole" (
+  "roomCustomerRoleID" int4 NOT NULL DEFAULT nextval('"RoomCustomerRole_roomCustomerRoleID_seq"'::regclass),
+  "roomCustomerID" int4,
+  "roomRoleID" int4
+)
+;
+
+-- ----------------------------
+-- Records of RoomCustomerRole
+-- ----------------------------
+INSERT INTO "public"."RoomCustomerRole" VALUES (1, 5, 2);
+
+-- ----------------------------
+-- Table structure for RoomRole
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."RoomRole";
+CREATE TABLE "public"."RoomRole" (
+  "roomRoleID" int4 NOT NULL DEFAULT nextval('"RoomRole_roomRoleID_seq"'::regclass),
+  "name" varchar(30) COLLATE "pg_catalog"."default"
+)
+;
+
+-- ----------------------------
+-- Records of RoomRole
+-- ----------------------------
+INSERT INTO "public"."RoomRole" VALUES (1, 'member');
+INSERT INTO "public"."RoomRole" VALUES (2, 'teacher');
 
 -- ----------------------------
 -- Table structure for RoomSolution
@@ -260,6 +314,27 @@ END$BODY$
   COST 100;
 
 -- ----------------------------
+-- Function structure for create_room_customer_role_table
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."create_room_customer_role_table"();
+CREATE OR REPLACE FUNCTION "public"."create_room_customer_role_table"()
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	CREATE TABLE "RoomCustomerRole" (
+		"roomCustomerRoleID" serial PRIMARY KEY,
+		"roomCustomerID" int4 UNIQUE,
+		"roomRoleID" int4,
+		
+		FOREIGN KEY ("roomCustomerID") REFERENCES "RoomCustomer" ("roomCustomerID") ON UPDATE CASCADE ON DELETE CASCADE,
+		FOREIGN KEY ("roomRoleID") REFERENCES "RoomRole" ("roomRoleID") ON UPDATE CASCADE ON DELETE RESTRICT
+	);
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
 -- Function structure for create_room_customer_table
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."create_room_customer_table"();
@@ -275,6 +350,26 @@ CREATE OR REPLACE FUNCTION "public"."create_room_customer_table"()
 		FOREIGN KEY ("roomID") REFERENCES "Room" ("roomID") ON UPDATE CASCADE ON DELETE CASCADE,
 		FOREIGN KEY ("customerID") REFERENCES "Customer" ("customerID") ON UPDATE CASCADE ON DELETE CASCADE
 	);
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
+-- Function structure for create_room_role_table
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."create_room_role_table"();
+CREATE OR REPLACE FUNCTION "public"."create_room_role_table"()
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	CREATE TABLE "RoomRole" (
+		"roomRoleID" serial PRIMARY KEY,
+		name varchar(30)
+	);
+	
+	INSERT INTO "RoomRole" (name) VALUES('member');
+	INSERT INTO "RoomRole" (name) VALUES('teacher');
 
 	RETURN;
 END$BODY$
@@ -452,6 +547,48 @@ END$BODY$
   ROWS 1000;
 
 -- ----------------------------
+-- Function structure for get_room_customer_role_by_customer_id
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_customer_role_by_customer_id"("id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_customer_role_by_customer_id"("id" int4)
+  RETURNS SETOF "public"."RoomCustomerRole" AS $BODY$BEGIN
+
+	RETURN QUERY SELECT * FROM "RoomCustomerRole" WHERE "customerID" = "id";
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_room_role_by_id
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_role_by_id"("id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_role_by_id"("id" int4)
+  RETURNS SETOF "public"."RoomRole" AS $BODY$BEGIN
+
+	RETURN QUERY SELECT * FROM "RoomRole" WHERE "roomRoleID" = "id";
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_room_role_by_name
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_role_by_name"("role_name" varchar);
+CREATE OR REPLACE FUNCTION "public"."get_room_role_by_name"("role_name" varchar)
+  RETURNS SETOF "public"."RoomRole" AS $BODY$BEGIN
+
+	RETURN QUERY SELECT * FROM "RoomRole" WHERE "name" = "role_name";
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
 -- Function structure for get_room_solution_by_id
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."get_room_solution_by_id"("id" int4);
@@ -570,11 +707,25 @@ END$BODY$
 -- ----------------------------
 -- Function structure for insert_room_customer
 -- ----------------------------
-DROP FUNCTION IF EXISTS "public"."insert_room_customer"("roomID" int4, "customerID" int4);
-CREATE OR REPLACE FUNCTION "public"."insert_room_customer"("roomID" int4, "customerID" int4)
+DROP FUNCTION IF EXISTS "public"."insert_room_customer"("room_id" int4, "customer_id" int4);
+CREATE OR REPLACE FUNCTION "public"."insert_room_customer"("room_id" int4, "customer_id" int4)
+  RETURNS "pg_catalog"."int4" AS $BODY$BEGIN
+	
+	INSERT INTO "RoomCustomer" ("roomID", "customerID") VALUES("room_id", "customer_id");
+	RETURN (SELECT "roomCustomerID" FROM "RoomCustomer" WHERE "roomID" = "room_id" AND "customerID" = "customer_id");
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
+-- Function structure for insert_room_customer_role
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."insert_room_customer_role"("room_customer_id" int4, "role_id" int4);
+CREATE OR REPLACE FUNCTION "public"."insert_room_customer_role"("room_customer_id" int4, "role_id" int4)
   RETURNS "pg_catalog"."void" AS $BODY$BEGIN
 	
-	INSERT INTO "RoomCustomer" ("roomID", "customerID") VALUES("roomID", "customerID");
+	INSERT INTO "RoomCustomerRole" ("roomCustomerID", "roomRoleID") VALUES ("room_customer_id", "role_id");
 
 	RETURN;
 END$BODY$
@@ -673,16 +824,30 @@ SELECT setval('"public"."Role_roleID_seq"', 7, true);
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
+ALTER SEQUENCE "public"."RoomCustomerRole_roomCustomerRoleID_seq"
+OWNED BY "public"."RoomCustomerRole"."roomCustomerRoleID";
+SELECT setval('"public"."RoomCustomerRole_roomCustomerRoleID_seq"', 2, true);
+
+-- ----------------------------
+-- Alter sequences owned by
+-- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomer_roomCustomerID_seq"
 OWNED BY "public"."RoomCustomer"."roomCustomerID";
-SELECT setval('"public"."RoomCustomer_roomCustomerID_seq"', 3, true);
+SELECT setval('"public"."RoomCustomer_roomCustomerID_seq"', 6, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomer_variant_seq"
 OWNED BY "public"."RoomCustomer"."variant";
-SELECT setval('"public"."RoomCustomer_variant_seq"', 3, true);
+SELECT setval('"public"."RoomCustomer_variant_seq"', 6, true);
+
+-- ----------------------------
+-- Alter sequences owned by
+-- ----------------------------
+ALTER SEQUENCE "public"."RoomRole_roomRoleID_seq"
+OWNED BY "public"."RoomRole"."roomRoleID";
+SELECT setval('"public"."RoomRole_roomRoleID_seq"', 3, true);
 
 -- ----------------------------
 -- Alter sequences owned by
@@ -710,7 +875,7 @@ SELECT setval('"public"."RoomTask_roomTaskID_seq"', 12, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."Room_roomID_seq"
 OWNED BY "public"."Room"."roomID";
-SELECT setval('"public"."Room_roomID_seq"', 13, true);
+SELECT setval('"public"."Room_roomID_seq"', 16, true);
 
 -- ----------------------------
 -- Primary Key structure for table Customer
@@ -736,6 +901,21 @@ ALTER TABLE "public"."Room" ADD CONSTRAINT "Room_pkey" PRIMARY KEY ("roomID");
 -- Primary Key structure for table RoomCustomer
 -- ----------------------------
 ALTER TABLE "public"."RoomCustomer" ADD CONSTRAINT "RoomCustomer_pkey" PRIMARY KEY ("roomCustomerID");
+
+-- ----------------------------
+-- Uniques structure for table RoomCustomerRole
+-- ----------------------------
+ALTER TABLE "public"."RoomCustomerRole" ADD CONSTRAINT "RoomCustomerRole_roomCustomerID_key" UNIQUE ("roomCustomerID");
+
+-- ----------------------------
+-- Primary Key structure for table RoomCustomerRole
+-- ----------------------------
+ALTER TABLE "public"."RoomCustomerRole" ADD CONSTRAINT "RoomCustomerRole_pkey" PRIMARY KEY ("roomCustomerRoleID");
+
+-- ----------------------------
+-- Primary Key structure for table RoomRole
+-- ----------------------------
+ALTER TABLE "public"."RoomRole" ADD CONSTRAINT "RoomRole_pkey" PRIMARY KEY ("roomRoleID");
 
 -- ----------------------------
 -- Primary Key structure for table RoomSolution
@@ -772,6 +952,12 @@ ALTER TABLE "public"."Room" ADD CONSTRAINT "Room_customerID_fkey" FOREIGN KEY ("
 -- ----------------------------
 ALTER TABLE "public"."RoomCustomer" ADD CONSTRAINT "RoomCustomer_customerID_fkey" FOREIGN KEY ("customerID") REFERENCES "public"."Customer" ("customerID") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "public"."RoomCustomer" ADD CONSTRAINT "RoomCustomer_roomID_fkey" FOREIGN KEY ("roomID") REFERENCES "public"."Room" ("roomID") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- ----------------------------
+-- Foreign Keys structure for table RoomCustomerRole
+-- ----------------------------
+ALTER TABLE "public"."RoomCustomerRole" ADD CONSTRAINT "RoomCustomerRole_roomCustomerID_fkey" FOREIGN KEY ("roomCustomerID") REFERENCES "public"."RoomCustomer" ("roomCustomerID") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."RoomCustomerRole" ADD CONSTRAINT "RoomCustomerRole_roomRoleID_fkey" FOREIGN KEY ("roomRoleID") REFERENCES "public"."RoomRole" ("roomRoleID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- ----------------------------
 -- Foreign Keys structure for table RoomSolution
