@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 21/10/2023 20:38:14
+ Date: 21/10/2023 22:42:19
 */
 
 
@@ -554,6 +554,20 @@ CREATE OR REPLACE FUNCTION "public"."get_room_customer_role_by_customer_id"("id"
   RETURNS SETOF "public"."RoomCustomerRole" AS $BODY$BEGIN
 
 	RETURN QUERY SELECT * FROM "RoomCustomerRole" WHERE "customerID" = "id";
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_room_owner
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_owner"("room_id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_owner"("room_id" int4)
+  RETURNS SETOF "public"."Customer" AS $BODY$BEGIN
+
+	RETURN QUERY SELECT * FROM "Customer" WHERE "customerID" = (SELECT "ownerID" FROM "Room" WHERE "roomID" = "room_id");
 	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
