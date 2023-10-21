@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 20/10/2023 21:53:32
+ Date: 21/10/2023 20:38:14
 */
 
 
@@ -770,6 +770,19 @@ CREATE OR REPLACE FUNCTION "public"."insert_room_task_variant"("roomTaskID" int4
 	INSERT INTO "RoomTaskVariant" ("roomTaskID", "variant") VALUES ("roomTaskID", "variant");
 
 	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
+-- Function structure for is_customer_in_room
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."is_customer_in_room"("customer_id" int4, "room_id" int4);
+CREATE OR REPLACE FUNCTION "public"."is_customer_in_room"("customer_id" int4, "room_id" int4)
+  RETURNS "pg_catalog"."bool" AS $BODY$BEGIN
+
+	RETURN (EXISTS(SELECT * FROM "RoomCustomer" WHERE "customerID" = "customer_id" AND "roomID" = "room_id"));
+	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
