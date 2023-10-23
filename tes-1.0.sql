@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 22/10/2023 23:10:04
+ Date: 23/10/2023 23:34:44
 */
 
 
@@ -221,7 +221,36 @@ CREATE TABLE "public"."RoomCustomerPost" (
 -- ----------------------------
 -- Records of RoomCustomerPost
 -- ----------------------------
-INSERT INTO "public"."RoomCustomerPost" VALUES (1, 5, '2023-10-22 23:09:18.571314', 'Test post. Hello world!');
+INSERT INTO "public"."RoomCustomerPost" VALUES (1, 5, '2023-10-22 23:09:18.571314', 'Test post. Hello world! 1');
+INSERT INTO "public"."RoomCustomerPost" VALUES (2, 5, '2023-10-22 23:09:18.571315', 'Test post. Hello world! 1');
+INSERT INTO "public"."RoomCustomerPost" VALUES (3, 5, '2023-10-23 22:15:20', 'Test post. Hello world 1');
+INSERT INTO "public"."RoomCustomerPost" VALUES (4, 5, '2023-10-23 22:15:48', 'Test post. Hello world 1');
+INSERT INTO "public"."RoomCustomerPost" VALUES (5, 5, '2023-10-23 22:15:55', 'Test post. Hello world 1');
+INSERT INTO "public"."RoomCustomerPost" VALUES (6, 5, '2023-10-23 22:16:05', 'Test post. Hello world 1');
+INSERT INTO "public"."RoomCustomerPost" VALUES (7, 5, '2023-10-23 22:16:13', 'Test post. Hello world 1');
+INSERT INTO "public"."RoomCustomerPost" VALUES (8, 5, '2023-10-23 22:16:20', 'Test post. Hello world 1');
+INSERT INTO "public"."RoomCustomerPost" VALUES (9, 5, '2023-10-23 22:16:28', 'Test post. Hello world 1');
+INSERT INTO "public"."RoomCustomerPost" VALUES (10, 5, '2023-10-23 22:16:35', 'Test post. Hello world 1');
+INSERT INTO "public"."RoomCustomerPost" VALUES (11, 5, '2023-10-23 22:16:42', 'Test post. Hello world 2');
+INSERT INTO "public"."RoomCustomerPost" VALUES (12, 5, '2023-10-23 22:16:49', 'Test post. Hello world 2');
+INSERT INTO "public"."RoomCustomerPost" VALUES (13, 5, '2023-10-23 22:16:55', 'Test post. Hello world 2');
+INSERT INTO "public"."RoomCustomerPost" VALUES (14, 5, '2023-10-23 22:17:10', 'Test post. Hello world 2');
+INSERT INTO "public"."RoomCustomerPost" VALUES (15, 5, '2023-10-23 22:17:18', 'Test post. Hello world 2');
+INSERT INTO "public"."RoomCustomerPost" VALUES (16, 5, '2023-10-23 22:17:24', 'Test post. Hello world 2');
+INSERT INTO "public"."RoomCustomerPost" VALUES (17, 5, '2023-10-23 22:17:29', 'Test post. Hello world 2');
+INSERT INTO "public"."RoomCustomerPost" VALUES (18, 5, '2023-10-23 22:17:35', 'Test post. Hello world 2');
+INSERT INTO "public"."RoomCustomerPost" VALUES (19, 5, '2023-10-23 22:17:44', 'Test post. Hello world 2');
+INSERT INTO "public"."RoomCustomerPost" VALUES (20, 5, '2023-10-23 22:17:51', 'Test post. Hello world 2');
+INSERT INTO "public"."RoomCustomerPost" VALUES (21, 5, '2023-10-23 22:18:00', 'Test post. Hello world 3');
+INSERT INTO "public"."RoomCustomerPost" VALUES (22, 5, '2023-10-23 22:18:05', 'Test post. Hello world 3');
+INSERT INTO "public"."RoomCustomerPost" VALUES (23, 5, '2023-10-23 22:18:11', 'Test post. Hello world 3');
+INSERT INTO "public"."RoomCustomerPost" VALUES (24, 5, '2023-10-23 22:18:16', 'Test post. Hello world 3');
+INSERT INTO "public"."RoomCustomerPost" VALUES (25, 5, '2023-10-23 22:18:23', 'Test post. Hello world 3');
+INSERT INTO "public"."RoomCustomerPost" VALUES (26, 5, '2023-10-23 22:18:29', 'Test post. Hello world 3');
+INSERT INTO "public"."RoomCustomerPost" VALUES (27, 5, '2023-10-23 22:18:36', 'Test post. Hello world 3');
+INSERT INTO "public"."RoomCustomerPost" VALUES (28, 5, '2023-10-23 22:18:48', 'Test post. Hello world 3');
+INSERT INTO "public"."RoomCustomerPost" VALUES (29, 5, '2023-10-23 22:18:54', 'Test post. Hello world 3');
+INSERT INTO "public"."RoomCustomerPost" VALUES (30, 5, '2023-10-23 22:19:00', 'Test post. Hello world 3');
 
 -- ----------------------------
 -- Table structure for RoomCustomerRole
@@ -626,6 +655,23 @@ END$BODY$
   ROWS 1000;
 
 -- ----------------------------
+-- Function structure for get_room_customer_posts
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_customer_posts"("room_id" int4, "start" int4, "posts_count" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_customer_posts"("room_id" int4, "start" int4, "posts_count" int4)
+  RETURNS SETOF "public"."RoomCustomerPost" AS $BODY$BEGIN
+
+	RETURN QUERY SELECT "roomCustomerPostID", rcp."roomCustomerID", "posted", "text" FROM "RoomCustomerPost" AS rcp
+		LEFT JOIN "RoomCustomer" AS rc ON rc."roomCustomerID" = rcp."roomCustomerID"
+		WHERE rc."roomID" = "room_id" 
+		ORDER BY "posted" ASC OFFSET "start" LIMIT "posts_count";
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
 -- Function structure for get_room_customer_role_by_customer_id
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."get_room_customer_role_by_customer_id"("id" int4);
@@ -946,7 +992,7 @@ SELECT setval('"public"."Role_roleID_seq"', 7, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerPost_roomPostID_seq"
 OWNED BY "public"."RoomCustomerPost"."roomCustomerPostID";
-SELECT setval('"public"."RoomCustomerPost_roomPostID_seq"', 2, true);
+SELECT setval('"public"."RoomCustomerPost_roomPostID_seq"', 31, true);
 
 -- ----------------------------
 -- Alter sequences owned by
