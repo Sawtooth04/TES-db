@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 23/10/2023 23:34:44
+ Date: 25/10/2023 19:24:32
 */
 
 
@@ -659,10 +659,12 @@ END$BODY$
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."get_room_customer_posts"("room_id" int4, "start" int4, "posts_count" int4);
 CREATE OR REPLACE FUNCTION "public"."get_room_customer_posts"("room_id" int4, "start" int4, "posts_count" int4)
-  RETURNS SETOF "public"."RoomCustomerPost" AS $BODY$BEGIN
+  RETURNS TABLE("roomCustomerPostID" int4, "roomCustomerID" int4, "posted" timestamp, "text" varchar, "customerID" int4, "name" varchar) AS $BODY$BEGIN
 
-	RETURN QUERY SELECT "roomCustomerPostID", rcp."roomCustomerID", "posted", "text" FROM "RoomCustomerPost" AS rcp
+	RETURN QUERY SELECT rcp."roomCustomerPostID", rcp."roomCustomerID", rcp."posted", rcp."text", cu."customerID", cu."name"
+		FROM "RoomCustomerPost" AS rcp
 		LEFT JOIN "RoomCustomer" AS rc ON rc."roomCustomerID" = rcp."roomCustomerID"
+		LEFT JOIN "Customer" AS cu ON rc."customerID" = cu."customerID"
 		WHERE rc."roomID" = "room_id" 
 		ORDER BY "posted" ASC OFFSET "start" LIMIT "posts_count";
 	
