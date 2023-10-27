@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 26/10/2023 22:47:10
+ Date: 27/10/2023 20:19:08
 */
 
 
@@ -317,7 +317,12 @@ CREATE TABLE "public"."RoomTask" (
 -- ----------------------------
 -- Records of RoomTask
 -- ----------------------------
-INSERT INTO "public"."RoomTask" VALUES (1, 15, 'Test', 'Test task', '2023-10-27 03:00:00', NULL);
+INSERT INTO "public"."RoomTask" VALUES (1, 15, 'Test', 'Test task', '2023-10-27 03:00:00', '2023-10-20 19:48:41');
+INSERT INTO "public"."RoomTask" VALUES (2, 15, 'Test', 'Test task', '2023-10-27 03:00:00', '2023-10-19 19:48:41');
+INSERT INTO "public"."RoomTask" VALUES (3, 15, 'Test', 'Test task', '2023-10-27 03:00:00', '2023-10-18 19:52:33');
+INSERT INTO "public"."RoomTask" VALUES (4, 15, 'Test', 'Test task', '2023-10-27 03:00:00', '2023-10-17 19:52:56');
+INSERT INTO "public"."RoomTask" VALUES (5, 15, 'Test', 'Test task', '2023-10-27 03:00:00', '2023-10-16 19:53:16');
+INSERT INTO "public"."RoomTask" VALUES (6, 15, 'Test', 'Test task', '2023-10-27 03:00:00', '2023-10-25 19:53:38');
 
 -- ----------------------------
 -- Table structure for RoomTaskVariant
@@ -587,6 +592,20 @@ CREATE OR REPLACE FUNCTION "public"."get_customer_rooms"("id" int4)
     LEFT JOIN "RoomCustomer" AS rc ON "Room"."roomID" = rc."roomID"
     WHERE rc."customerID" = "id";
   
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_latest_room_tasks
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_latest_room_tasks"("room_id" int4, "count" int4);
+CREATE OR REPLACE FUNCTION "public"."get_latest_room_tasks"("room_id" int4, "count" int4)
+  RETURNS SETOF "public"."RoomTask" AS $BODY$BEGIN
+
+	RETURN QUERY SELECT * FROM "RoomTask" WHERE "roomID" = "room_id" ORDER BY "added" DESC LIMIT "count";
+	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
@@ -1069,7 +1088,7 @@ SELECT setval('"public"."RoomTaskVariant_roomTaskVariantID_seq"', 2, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomTask_roomTaskID_seq"
 OWNED BY "public"."RoomTask"."roomTaskID";
-SELECT setval('"public"."RoomTask_roomTaskID_seq"', 2, true);
+SELECT setval('"public"."RoomTask_roomTaskID_seq"', 7, true);
 
 -- ----------------------------
 -- Alter sequences owned by
