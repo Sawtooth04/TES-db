@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 27/10/2023 20:19:08
+ Date: 28/10/2023 22:57:10
 */
 
 
@@ -317,12 +317,20 @@ CREATE TABLE "public"."RoomTask" (
 -- ----------------------------
 -- Records of RoomTask
 -- ----------------------------
-INSERT INTO "public"."RoomTask" VALUES (1, 15, 'Test', 'Test task', '2023-10-27 03:00:00', '2023-10-20 19:48:41');
-INSERT INTO "public"."RoomTask" VALUES (2, 15, 'Test', 'Test task', '2023-10-27 03:00:00', '2023-10-19 19:48:41');
-INSERT INTO "public"."RoomTask" VALUES (3, 15, 'Test', 'Test task', '2023-10-27 03:00:00', '2023-10-18 19:52:33');
-INSERT INTO "public"."RoomTask" VALUES (4, 15, 'Test', 'Test task', '2023-10-27 03:00:00', '2023-10-17 19:52:56');
-INSERT INTO "public"."RoomTask" VALUES (5, 15, 'Test', 'Test task', '2023-10-27 03:00:00', '2023-10-16 19:53:16');
-INSERT INTO "public"."RoomTask" VALUES (6, 15, 'Test', 'Test task', '2023-10-27 03:00:00', '2023-10-25 19:53:38');
+INSERT INTO "public"."RoomTask" VALUES (1, 15, 'Test 1', 'Test task', '2023-09-25 03:00:00', '2023-10-01 19:48:41');
+INSERT INTO "public"."RoomTask" VALUES (2, 15, 'Test 2', 'Test task', '2023-09-26 03:00:00', '2023-10-02 19:48:41');
+INSERT INTO "public"."RoomTask" VALUES (3, 15, 'Test 3', 'Test task', '2023-09-27 03:00:00', '2023-10-03 19:52:33');
+INSERT INTO "public"."RoomTask" VALUES (4, 15, 'Test 4', 'Test task', '2023-09-28 03:00:00', '2023-10-04 19:52:56');
+INSERT INTO "public"."RoomTask" VALUES (5, 15, 'Test 5', 'Test task', '2023-09-29 03:00:00', '2023-10-05 19:53:16');
+INSERT INTO "public"."RoomTask" VALUES (6, 15, 'Test 6', 'Test task', '2023-09-30 03:00:00', '2023-10-06 19:53:38');
+INSERT INTO "public"."RoomTask" VALUES (7, 15, 'Test 7', 'Test task', '2023-10-01 13:42:26', '2023-10-07 13:42:52');
+INSERT INTO "public"."RoomTask" VALUES (8, 15, 'Test 8', 'Test task', '2023-10-02 13:42:32', '2023-10-08 13:42:58');
+INSERT INTO "public"."RoomTask" VALUES (9, 15, 'Test 9', 'Test task', '2023-10-03 13:42:36', '2023-10-09 13:43:02');
+INSERT INTO "public"."RoomTask" VALUES (10, 15, 'Test 10', 'Test task', '2023-10-04 13:42:39', '2023-10-10 13:43:05');
+INSERT INTO "public"."RoomTask" VALUES (11, 15, 'Test 11', 'Test task', '2023-10-05 13:42:43', '2023-10-11 13:43:08');
+INSERT INTO "public"."RoomTask" VALUES (12, 15, 'Test 12', 'Test task', '2023-10-06 13:42:45', '2023-10-12 13:43:10');
+INSERT INTO "public"."RoomTask" VALUES (13, 15, 'Test 13', 'Test task', '2023-10-07 13:42:49', '2023-10-13 13:43:14');
+INSERT INTO "public"."RoomTask" VALUES (14, 15, 'Test task from room', 'fgdhhhhhhhhhhhhhhhhhhhhhhhhhhhfdgh', '2023-10-31 23:34:00', '2023-10-28 20:34:36.680936');
 
 -- ----------------------------
 -- Table structure for RoomTaskVariant
@@ -694,7 +702,7 @@ CREATE OR REPLACE FUNCTION "public"."get_room_customer_posts"("room_id" int4, "s
 		LEFT JOIN "RoomCustomer" AS rc ON rc."roomCustomerID" = rcp."roomCustomerID"
 		LEFT JOIN "Customer" AS cu ON rc."customerID" = cu."customerID"
 		WHERE rc."roomID" = "room_id" 
-		ORDER BY "posted" ASC OFFSET "start" LIMIT "posts_count";
+		ORDER BY "posted" DESC OFFSET "start" LIMIT "posts_count";
 	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
@@ -808,6 +816,22 @@ CREATE OR REPLACE FUNCTION "public"."get_room_task_variant_by_id"("id" int4)
   RETURNS SETOF "public"."RoomTaskVariant" AS $BODY$BEGIN
   
   RETURN QUERY SELECT * FROM "RoomTaskVariant" WHERE "RoomTaskVariant"."roomTaskVariantID" = "id";
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_room_tasks
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_tasks"("room_id" int4, "start" int4, "tasks_count" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_tasks"("room_id" int4, "start" int4, "tasks_count" int4)
+  RETURNS SETOF "public"."RoomTask" AS $BODY$BEGIN
+
+	RETURN QUERY SELECT * FROM "RoomTask" WHERE "roomID" = "room_id"
+		ORDER BY "added" DESC OFFSET "start" LIMIT "tasks_count";
 
 	RETURN;
 END$BODY$
@@ -1088,7 +1112,7 @@ SELECT setval('"public"."RoomTaskVariant_roomTaskVariantID_seq"', 2, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomTask_roomTaskID_seq"
 OWNED BY "public"."RoomTask"."roomTaskID";
-SELECT setval('"public"."RoomTask_roomTaskID_seq"', 7, true);
+SELECT setval('"public"."RoomTask_roomTaskID_seq"', 15, true);
 
 -- ----------------------------
 -- Alter sequences owned by
