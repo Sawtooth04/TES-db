@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 28/10/2023 22:57:10
+ Date: 29/10/2023 19:41:05
 */
 
 
@@ -205,6 +205,7 @@ CREATE TABLE "public"."RoomCustomer" (
 -- Records of RoomCustomer
 -- ----------------------------
 INSERT INTO "public"."RoomCustomer" VALUES (5, 15, 6, 1);
+INSERT INTO "public"."RoomCustomer" VALUES (6, 15, 8, 2);
 
 -- ----------------------------
 -- Table structure for RoomCustomerPost
@@ -267,6 +268,7 @@ CREATE TABLE "public"."RoomCustomerRole" (
 -- Records of RoomCustomerRole
 -- ----------------------------
 INSERT INTO "public"."RoomCustomerRole" VALUES (1, 5, 2);
+INSERT INTO "public"."RoomCustomerRole" VALUES (2, 6, 1);
 
 -- ----------------------------
 -- Table structure for RoomRole
@@ -724,6 +726,24 @@ END$BODY$
   ROWS 1000;
 
 -- ----------------------------
+-- Function structure for get_room_customers_by_role_id
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_customers_by_role_id"("room_id" int4, "role_id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_customers_by_role_id"("room_id" int4, "role_id" int4)
+  RETURNS SETOF "public"."Customer" AS $BODY$BEGIN
+
+	RETURN QUERY SELECT c."customerID", c."name", c."passwordHash", c."email", c."roleID" FROM "RoomCustomerRole" AS rcr 
+		LEFT JOIN "RoomCustomer" AS rc ON rc."roomCustomerID" = rcr."roomCustomerID"
+		LEFT JOIN "Customer" AS c on c."customerID" = rc."customerID"
+		WHERE rcr."roomRoleID" = "role_id" AND rc."roomID" = "room_id"
+		ORDER BY rc."roomCustomerID" ASC;
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
 -- Function structure for get_room_owner
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."get_room_owner"("room_id" int4);
@@ -1070,14 +1090,14 @@ SELECT setval('"public"."RoomCustomerPost_roomPostID_seq"', 31, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerRole_roomCustomerRoleID_seq"
 OWNED BY "public"."RoomCustomerRole"."roomCustomerRoleID";
-SELECT setval('"public"."RoomCustomerRole_roomCustomerRoleID_seq"', 2, true);
+SELECT setval('"public"."RoomCustomerRole_roomCustomerRoleID_seq"', 3, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomer_roomCustomerID_seq"
 OWNED BY "public"."RoomCustomer"."roomCustomerID";
-SELECT setval('"public"."RoomCustomer_roomCustomerID_seq"', 6, true);
+SELECT setval('"public"."RoomCustomer_roomCustomerID_seq"', 7, true);
 
 -- ----------------------------
 -- Alter sequences owned by
