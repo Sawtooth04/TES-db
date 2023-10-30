@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 29/10/2023 19:41:05
+ Date: 30/10/2023 18:38:19
 */
 
 
@@ -180,14 +180,15 @@ DROP TABLE IF EXISTS "public"."Room";
 CREATE TABLE "public"."Room" (
   "roomID" int4 NOT NULL DEFAULT nextval('"Room_roomID_seq"'::regclass),
   "name" varchar(30) COLLATE "pg_catalog"."default" NOT NULL,
-  "ownerID" int4 NOT NULL
+  "ownerID" int4 NOT NULL,
+  "description" varchar(255) COLLATE "pg_catalog"."default"
 )
 ;
 
 -- ----------------------------
 -- Records of Room
 -- ----------------------------
-INSERT INTO "public"."Room" VALUES (15, 'Test Room', 6);
+INSERT INTO "public"."Room" VALUES (15, 'Test Room', 6, 'Test room description. Hello world!');
 
 -- ----------------------------
 -- Table structure for RoomCustomer
@@ -507,6 +508,7 @@ CREATE OR REPLACE FUNCTION "public"."create_room_table"()
 		"roomID" serial PRIMARY KEY,
 		name varchar(30),
 		"ownerID" int4,
+		"description" varchar(255),
 		
 		CONSTRAINT room_name_owner_uniq UNIQUE(name, "ownerID"),
 		FOREIGN KEY ("ownerID") REFERENCES "Customer" ("customerID") ON UPDATE CASCADE ON DELETE CASCADE
@@ -598,7 +600,7 @@ DROP FUNCTION IF EXISTS "public"."get_customer_rooms"("id" int4);
 CREATE OR REPLACE FUNCTION "public"."get_customer_rooms"("id" int4)
   RETURNS SETOF "public"."Room" AS $BODY$BEGIN
   
-  RETURN QUERY SELECT "Room"."roomID", "Room"."name", "Room"."ownerID" FROM "Room"
+  RETURN QUERY SELECT "Room"."roomID", "Room"."name", "Room"."ownerID", "Room"."description" FROM "Room"
     LEFT JOIN "RoomCustomer" AS rc ON "Room"."roomID" = rc."roomID"
     WHERE rc."customerID" = "id";
   
