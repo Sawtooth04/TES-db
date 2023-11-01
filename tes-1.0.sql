@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 30/10/2023 18:38:19
+ Date: 01/11/2023 23:08:08
 */
 
 
@@ -98,6 +98,17 @@ CACHE 1;
 -- ----------------------------
 DROP SEQUENCE IF EXISTS "public"."RoomSolution_roomSolutionID_seq";
 CREATE SEQUENCE "public"."RoomSolution_roomSolutionID_seq" 
+INCREMENT 1
+MINVALUE  1
+MAXVALUE 2147483647
+START 1
+CACHE 1;
+
+-- ----------------------------
+-- Sequence structure for RoomTaskComment_roomTaskCommentID_seq
+-- ----------------------------
+DROP SEQUENCE IF EXISTS "public"."RoomTaskComment_roomTaskCommentID_seq";
+CREATE SEQUENCE "public"."RoomTaskComment_roomTaskCommentID_seq" 
 INCREMENT 1
 MINVALUE  1
 MAXVALUE 2147483647
@@ -310,7 +321,7 @@ DROP TABLE IF EXISTS "public"."RoomTask";
 CREATE TABLE "public"."RoomTask" (
   "roomTaskID" int4 NOT NULL DEFAULT nextval('"RoomTask_roomTaskID_seq"'::regclass),
   "roomID" int4,
-  "name" varchar(75) COLLATE "pg_catalog"."default",
+  "name" varchar(35) COLLATE "pg_catalog"."default",
   "description" varchar(500) COLLATE "pg_catalog"."default",
   "lastTerm" timestamp(6),
   "added" timestamp(6)
@@ -336,6 +347,51 @@ INSERT INTO "public"."RoomTask" VALUES (13, 15, 'Test 13', 'Test task', '2023-10
 INSERT INTO "public"."RoomTask" VALUES (14, 15, 'Test task from room', 'fgdhhhhhhhhhhhhhhhhhhhhhhhhhhhfdgh', '2023-10-31 23:34:00', '2023-10-28 20:34:36.680936');
 
 -- ----------------------------
+-- Table structure for RoomTaskComment
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."RoomTaskComment";
+CREATE TABLE "public"."RoomTaskComment" (
+  "roomTaskCommentID" int4 NOT NULL DEFAULT nextval('"RoomTaskComment_roomTaskCommentID_seq"'::regclass),
+  "roomTaskID" int4,
+  "roomCustomerID" int4,
+  "comment" varchar(155) COLLATE "pg_catalog"."default",
+  "posted" timestamp(6)
+)
+;
+
+-- ----------------------------
+-- Records of RoomTaskComment
+-- ----------------------------
+INSERT INTO "public"."RoomTaskComment" VALUES (1, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-01 22:25:58');
+INSERT INTO "public"."RoomTaskComment" VALUES (4, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-02 22:29:12');
+INSERT INTO "public"."RoomTaskComment" VALUES (5, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-03 22:29:18');
+INSERT INTO "public"."RoomTaskComment" VALUES (6, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-04 22:29:24');
+INSERT INTO "public"."RoomTaskComment" VALUES (7, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-05 22:29:30');
+INSERT INTO "public"."RoomTaskComment" VALUES (8, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-06 22:29:37');
+INSERT INTO "public"."RoomTaskComment" VALUES (9, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-07 22:29:45');
+INSERT INTO "public"."RoomTaskComment" VALUES (10, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-08 22:29:52');
+INSERT INTO "public"."RoomTaskComment" VALUES (11, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-09 22:30:00');
+INSERT INTO "public"."RoomTaskComment" VALUES (12, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-10 22:30:08');
+INSERT INTO "public"."RoomTaskComment" VALUES (13, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-11 22:30:15');
+INSERT INTO "public"."RoomTaskComment" VALUES (14, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-12 22:30:22');
+INSERT INTO "public"."RoomTaskComment" VALUES (15, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-13 22:30:29');
+INSERT INTO "public"."RoomTaskComment" VALUES (16, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-14 22:30:38');
+INSERT INTO "public"."RoomTaskComment" VALUES (17, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-17 22:30:46');
+INSERT INTO "public"."RoomTaskComment" VALUES (18, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-18 22:30:54');
+INSERT INTO "public"."RoomTaskComment" VALUES (19, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-19 22:31:04');
+INSERT INTO "public"."RoomTaskComment" VALUES (20, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-20 22:31:10');
+INSERT INTO "public"."RoomTaskComment" VALUES (21, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-21 22:31:16');
+INSERT INTO "public"."RoomTaskComment" VALUES (22, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-22 22:31:27');
+INSERT INTO "public"."RoomTaskComment" VALUES (23, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-23 22:31:33');
+INSERT INTO "public"."RoomTaskComment" VALUES (24, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-24 22:31:40');
+INSERT INTO "public"."RoomTaskComment" VALUES (25, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-25 22:31:48');
+INSERT INTO "public"."RoomTaskComment" VALUES (26, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-26 22:31:55');
+INSERT INTO "public"."RoomTaskComment" VALUES (27, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-27 22:32:02');
+INSERT INTO "public"."RoomTaskComment" VALUES (28, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-28 22:32:07');
+INSERT INTO "public"."RoomTaskComment" VALUES (29, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-29 22:32:13');
+INSERT INTO "public"."RoomTaskComment" VALUES (30, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-30 22:32:20');
+
+-- ----------------------------
 -- Table structure for RoomTaskVariant
 -- ----------------------------
 DROP TABLE IF EXISTS "public"."RoomTaskVariant";
@@ -343,14 +399,15 @@ CREATE TABLE "public"."RoomTaskVariant" (
   "roomTaskVariantID" int4 NOT NULL DEFAULT nextval('"RoomTaskVariant_roomTaskVariantID_seq"'::regclass),
   "roomTaskID" int4,
   "variant" int4,
-  "path" varchar(50) COLLATE "pg_catalog"."default"
+  "path" varchar(50) COLLATE "pg_catalog"."default",
+  "description" varchar(255) COLLATE "pg_catalog"."default"
 )
 ;
 
 -- ----------------------------
 -- Records of RoomTaskVariant
 -- ----------------------------
-INSERT INTO "public"."RoomTaskVariant" VALUES (1, 1, 1, 'D:/TES/tasks/15/1/1');
+INSERT INTO "public"."RoomTaskVariant" VALUES (1, 1, 1, 'D:/TES/tasks/15/1/1', 'First variant of first task.');
 
 -- ----------------------------
 -- Function structure for create_customer_table
@@ -520,6 +577,30 @@ END$BODY$
   COST 100;
 
 -- ----------------------------
+-- Function structure for create_room_task_comment_table
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."create_room_task_comment_table"();
+CREATE OR REPLACE FUNCTION "public"."create_room_task_comment_table"()
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+
+	CREATE TABLE "RoomTaskComment" (
+		"roomTaskCommentID" serial PRIMARY KEY,
+		"roomTaskID" int4,
+		"roomCustomerID" int4,
+		"comment" varchar(155),
+		"posted" timestamp,
+		
+		FOREIGN KEY ("roomTaskID") REFERENCES "RoomTask" ("roomTaskID") ON UPDATE CASCADE ON DELETE CASCADE,
+		FOREIGN KEY ("roomCustomerID") REFERENCES "RoomCustomer" ("roomCustomerID") ON UPDATE CASCADE
+			ON DELETE CASCADE
+	);
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
 -- Function structure for create_room_task_table
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."create_room_task_table"();
@@ -529,7 +610,7 @@ CREATE OR REPLACE FUNCTION "public"."create_room_task_table"()
 	CREATE TABLE "RoomTask" (
 		"roomTaskID" serial PRIMARY KEY,
 		"roomID" int4,
-		"name" varchar(75),
+		"name" varchar(35),
 		"description" varchar(500),
 		"added" timestamp,
 		"lastTerm" timestamp,
@@ -554,6 +635,7 @@ CREATE OR REPLACE FUNCTION "public"."create_room_task_variant_table"()
 		"roomTaskID" int4,
 		"variant" int4,
 		"path" varchar(50),
+		"description" varchar(255),
 		
 		FOREIGN KEY ("roomTaskID") REFERENCES "RoomTask" ("roomTaskID") ON UPDATE CASCADE ON DELETE CASCADE,
 		CONSTRAINT room_task_path_uniq UNIQUE("roomTaskID", "path"),
@@ -816,6 +898,39 @@ END$BODY$
   ROWS 1000;
 
 -- ----------------------------
+-- Function structure for get_room_task_comment_by_id
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_task_comment_by_id"("id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_task_comment_by_id"("id" int4)
+  RETURNS SETOF "public"."RoomTaskComment" AS $BODY$BEGIN
+	
+	RETURN QUERY SELECT * FROM "RoomTaskComment" WHERE "roomTaskCommentID" = "id";
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_room_task_comments
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_task_comments"("room_task_id" int4, "start" int4, "count" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_task_comments"("room_task_id" int4, "start" int4, "count" int4)
+  RETURNS TABLE("roomTaskCommentID" int4, "roomTaskID" int4, "customerName" varchar, "comment" varchar, "posted" timestamp) AS $BODY$BEGIN
+
+	RETURN QUERY SELECT rtc."roomTaskCommentID", rtc."roomTaskID", c."name", rtc."comment", rtc."posted"
+		FROM "RoomTaskComment" AS rtc
+		LEFT JOIN "RoomCustomer" AS rc ON rc."roomCustomerID" = rtc."roomCustomerID"
+		LEFT JOIN "Customer" AS c ON c."customerID" = rc."customerID"
+		WHERE rtc."roomTaskID" = "room_task_id"
+		ORDER BY rtc."posted" DESC OFFSET "start" LIMIT "count";
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
 -- Function structure for get_room_task_variant
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."get_room_task_variant"("room_task_id" int4, "variant" int4);
@@ -992,13 +1107,29 @@ END$BODY$
   COST 100;
 
 -- ----------------------------
+-- Function structure for insert_room_task_comment
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."insert_room_task_comment"("room_task_id" int4, "room_customer_id" int4, "comment" varchar);
+CREATE OR REPLACE FUNCTION "public"."insert_room_task_comment"("room_task_id" int4, "room_customer_id" int4, "comment" varchar)
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	INSERT INTO "RoomTaskComment" ("roomTaskID", "roomCustomerID", "comment", "posted") 
+		VALUES ("room_task_ID", "room_customer_id", "comment", now());
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
 -- Function structure for insert_room_task_variant
 -- ----------------------------
-DROP FUNCTION IF EXISTS "public"."insert_room_task_variant"("room_task_ID" int4, "variant" int4, "path" varchar);
-CREATE OR REPLACE FUNCTION "public"."insert_room_task_variant"("room_task_ID" int4, "variant" int4, "path" varchar)
+DROP FUNCTION IF EXISTS "public"."insert_room_task_variant"("room_task_ID" int4, "variant" int4, "path" varchar, "description" varchar);
+CREATE OR REPLACE FUNCTION "public"."insert_room_task_variant"("room_task_ID" int4, "variant" int4, "path" varchar, "description" varchar)
   RETURNS "pg_catalog"."void" AS $BODY$BEGIN
   
-  INSERT INTO "RoomTaskVariant" ("roomTaskID", "variant", "path") VALUES ("room_task_ID", "variant", "path");
+  INSERT INTO "RoomTaskVariant" ("roomTaskID", "variant", "path", "description") 
+		VALUES ("room_task_ID", "variant", "path", "description");
 
   RETURN;
 END$BODY$
@@ -1125,6 +1256,13 @@ SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 8, true);
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
+ALTER SEQUENCE "public"."RoomTaskComment_roomTaskCommentID_seq"
+OWNED BY "public"."RoomTaskComment"."roomTaskCommentID";
+SELECT setval('"public"."RoomTaskComment_roomTaskCommentID_seq"', 31, true);
+
+-- ----------------------------
+-- Alter sequences owned by
+-- ----------------------------
 ALTER SEQUENCE "public"."RoomTaskVariant_roomTaskVariantID_seq"
 OWNED BY "public"."RoomTaskVariant"."roomTaskVariantID";
 SELECT setval('"public"."RoomTaskVariant_roomTaskVariantID_seq"', 2, true);
@@ -1199,6 +1337,11 @@ ALTER TABLE "public"."RoomSolution" ADD CONSTRAINT "RoomSolution_pkey" PRIMARY K
 ALTER TABLE "public"."RoomTask" ADD CONSTRAINT "RoomTask_pkey" PRIMARY KEY ("roomTaskID");
 
 -- ----------------------------
+-- Primary Key structure for table RoomTaskComment
+-- ----------------------------
+ALTER TABLE "public"."RoomTaskComment" ADD CONSTRAINT "RoomTaskComment_pkey" PRIMARY KEY ("roomTaskCommentID");
+
+-- ----------------------------
 -- Uniques structure for table RoomTaskVariant
 -- ----------------------------
 ALTER TABLE "public"."RoomTaskVariant" ADD CONSTRAINT "room_task_path_uniq" UNIQUE ("roomTaskID", "path");
@@ -1245,6 +1388,12 @@ ALTER TABLE "public"."RoomSolution" ADD CONSTRAINT "RoomSolution_roomID_fkey" FO
 -- Foreign Keys structure for table RoomTask
 -- ----------------------------
 ALTER TABLE "public"."RoomTask" ADD CONSTRAINT "RoomTask_roomID_fkey" FOREIGN KEY ("roomID") REFERENCES "public"."Room" ("roomID") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- ----------------------------
+-- Foreign Keys structure for table RoomTaskComment
+-- ----------------------------
+ALTER TABLE "public"."RoomTaskComment" ADD CONSTRAINT "RoomTaskComment_roomCustomerID_fkey" FOREIGN KEY ("roomCustomerID") REFERENCES "public"."RoomCustomer" ("roomCustomerID") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."RoomTaskComment" ADD CONSTRAINT "RoomTaskComment_roomTaskID_fkey" FOREIGN KEY ("roomTaskID") REFERENCES "public"."RoomTask" ("roomTaskID") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- ----------------------------
 -- Foreign Keys structure for table RoomTaskVariant
