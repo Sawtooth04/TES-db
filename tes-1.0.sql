@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 01/11/2023 23:08:08
+ Date: 02/11/2023 21:49:43
 */
 
 
@@ -389,7 +389,8 @@ INSERT INTO "public"."RoomTaskComment" VALUES (26, 1, 5, 'TestTestTestTestTestTe
 INSERT INTO "public"."RoomTaskComment" VALUES (27, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-27 22:32:02');
 INSERT INTO "public"."RoomTaskComment" VALUES (28, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-28 22:32:07');
 INSERT INTO "public"."RoomTaskComment" VALUES (29, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-29 22:32:13');
-INSERT INTO "public"."RoomTaskComment" VALUES (30, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-30 22:32:20');
+INSERT INTO "public"."RoomTaskComment" VALUES (30, 1, 5, 'TestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest', '2023-11-30 22:32:20');
+INSERT INTO "public"."RoomTaskComment" VALUES (31, 1, 6, 'sdfsdsdf', '2023-11-02 21:48:46.242504');
 
 -- ----------------------------
 -- Table structure for RoomTaskVariant
@@ -1114,7 +1115,7 @@ CREATE OR REPLACE FUNCTION "public"."insert_room_task_comment"("room_task_id" in
   RETURNS "pg_catalog"."void" AS $BODY$BEGIN
 	
 	INSERT INTO "RoomTaskComment" ("roomTaskID", "roomCustomerID", "comment", "posted") 
-		VALUES ("room_task_ID", "room_customer_id", "comment", now());
+		VALUES ("room_task_id", "room_customer_id", "comment", now());
 
 	RETURN;
 END$BODY$
@@ -1258,7 +1259,7 @@ SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 8, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomTaskComment_roomTaskCommentID_seq"
 OWNED BY "public"."RoomTaskComment"."roomTaskCommentID";
-SELECT setval('"public"."RoomTaskComment_roomTaskCommentID_seq"', 31, true);
+SELECT setval('"public"."RoomTaskComment_roomTaskCommentID_seq"', 32, true);
 
 -- ----------------------------
 -- Alter sequences owned by
