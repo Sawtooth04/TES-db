@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 02/11/2023 21:49:43
+ Date: 03/11/2023 23:46:09
 */
 
 
@@ -378,19 +378,9 @@ INSERT INTO "public"."RoomTaskComment" VALUES (15, 1, 5, 'TestTestTestTestTestTe
 INSERT INTO "public"."RoomTaskComment" VALUES (16, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-14 22:30:38');
 INSERT INTO "public"."RoomTaskComment" VALUES (17, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-17 22:30:46');
 INSERT INTO "public"."RoomTaskComment" VALUES (18, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-18 22:30:54');
-INSERT INTO "public"."RoomTaskComment" VALUES (19, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-19 22:31:04');
-INSERT INTO "public"."RoomTaskComment" VALUES (20, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-20 22:31:10');
-INSERT INTO "public"."RoomTaskComment" VALUES (21, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-21 22:31:16');
-INSERT INTO "public"."RoomTaskComment" VALUES (22, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-22 22:31:27');
-INSERT INTO "public"."RoomTaskComment" VALUES (23, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-23 22:31:33');
-INSERT INTO "public"."RoomTaskComment" VALUES (24, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-24 22:31:40');
-INSERT INTO "public"."RoomTaskComment" VALUES (25, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-25 22:31:48');
-INSERT INTO "public"."RoomTaskComment" VALUES (26, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-26 22:31:55');
-INSERT INTO "public"."RoomTaskComment" VALUES (27, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-27 22:32:02');
-INSERT INTO "public"."RoomTaskComment" VALUES (28, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-28 22:32:07');
-INSERT INTO "public"."RoomTaskComment" VALUES (29, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-29 22:32:13');
 INSERT INTO "public"."RoomTaskComment" VALUES (30, 1, 5, 'TestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest', '2023-11-30 22:32:20');
 INSERT INTO "public"."RoomTaskComment" VALUES (31, 1, 6, 'sdfsdsdf', '2023-11-02 21:48:46.242504');
+INSERT INTO "public"."RoomTaskComment" VALUES (32, 1, 6, 'zd2wsx3ec4rfr5vgst6bbyb7hnjkmi', '2023-11-03 22:10:54.124096');
 
 -- ----------------------------
 -- Table structure for RoomTaskVariant
@@ -642,6 +632,20 @@ CREATE OR REPLACE FUNCTION "public"."create_room_task_variant_table"()
 		CONSTRAINT room_task_path_uniq UNIQUE("roomTaskID", "path"),
 		CONSTRAINT room_task_name_uniq UNIQUE("roomTaskID", "variant")
 	);
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
+-- Function structure for delete_room_task_comment_by_id
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."delete_room_task_comment_by_id"("id" int4);
+CREATE OR REPLACE FUNCTION "public"."delete_room_task_comment_by_id"("id" int4)
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	DELETE FROM "RoomTaskComment" WHERE "roomTaskCommentID" = "id";
 
 	RETURN;
 END$BODY$
@@ -1259,7 +1263,7 @@ SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 8, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomTaskComment_roomTaskCommentID_seq"
 OWNED BY "public"."RoomTaskComment"."roomTaskCommentID";
-SELECT setval('"public"."RoomTaskComment_roomTaskCommentID_seq"', 32, true);
+SELECT setval('"public"."RoomTaskComment_roomTaskCommentID_seq"', 33, true);
 
 -- ----------------------------
 -- Alter sequences owned by
