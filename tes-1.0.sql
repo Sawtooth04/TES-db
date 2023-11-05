@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 03/11/2023 23:46:09
+ Date: 05/11/2023 22:41:54
 */
 
 
@@ -312,7 +312,7 @@ CREATE TABLE "public"."RoomSolution" (
 -- ----------------------------
 -- Records of RoomSolution
 -- ----------------------------
-INSERT INTO "public"."RoomSolution" VALUES (7, 15, 'D:\TES\solutions\15\1\zalupa\sources');
+INSERT INTO "public"."RoomSolution" VALUES (13, 15, 'D:\TES\solutions\15\1\zalupa\sources');
 
 -- ----------------------------
 -- Table structure for RoomTask
@@ -1086,11 +1086,13 @@ END$BODY$
 -- ----------------------------
 -- Function structure for insert_room_solution
 -- ----------------------------
-DROP FUNCTION IF EXISTS "public"."insert_room_solution"("roomID" int4, "path" varchar);
-CREATE OR REPLACE FUNCTION "public"."insert_room_solution"("roomID" int4, "path" varchar)
+DROP FUNCTION IF EXISTS "public"."insert_room_solution"("room_id" int4, "solution_path" varchar);
+CREATE OR REPLACE FUNCTION "public"."insert_room_solution"("room_id" int4, "solution_path" varchar)
   RETURNS "pg_catalog"."void" AS $BODY$BEGIN
 	
-	INSERT INTO "RoomSolution" ("roomID", "path") VALUES ("roomID", "path");
+	IF NOT EXISTS (SELECT * FROM "RoomSolution" WHERE "roomID"="room_id" AND "path"="solution_path") THEN
+		INSERT INTO "RoomSolution" ("roomID", "path") VALUES ("room_id", "solution_path");
+	END IF;
 
 	RETURN;
 END$BODY$
@@ -1256,7 +1258,7 @@ SELECT setval('"public"."RoomRole_roomRoleID_seq"', 3, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomSolution_roomSolutionID_seq"
 OWNED BY "public"."RoomSolution"."roomSolutionID";
-SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 8, true);
+SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 14, true);
 
 -- ----------------------------
 -- Alter sequences owned by
