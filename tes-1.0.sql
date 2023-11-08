@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 05/11/2023 22:41:54
+ Date: 08/11/2023 22:56:48
 */
 
 
@@ -304,15 +304,18 @@ INSERT INTO "public"."RoomRole" VALUES (2, 'teacher');
 DROP TABLE IF EXISTS "public"."RoomSolution";
 CREATE TABLE "public"."RoomSolution" (
   "roomSolutionID" int4 NOT NULL DEFAULT nextval('"RoomSolution_roomSolutionID_seq"'::regclass),
-  "roomID" int4,
-  "path" varchar(50) COLLATE "pg_catalog"."default"
+  "path" varchar(50) COLLATE "pg_catalog"."default",
+  "isSuccessfullyTested" bool,
+  "isAccepted" bool,
+  "roomTaskID" int4,
+  "roomCustomerID" int4
 )
 ;
 
 -- ----------------------------
 -- Records of RoomSolution
 -- ----------------------------
-INSERT INTO "public"."RoomSolution" VALUES (13, 15, 'D:\TES\solutions\15\1\zalupa\sources');
+INSERT INTO "public"."RoomSolution" VALUES (15, 'D:\TES\solutions\15\1\zalupa\sources', 't', 'f', 1, 5);
 
 -- ----------------------------
 -- Table structure for RoomTask
@@ -534,10 +537,14 @@ CREATE OR REPLACE FUNCTION "public"."create_room_solution_table"()
 	
 	CREATE TABLE "RoomSolution" (
 		"roomSolutionID" serial PRIMARY KEY,
-		"roomID" int4,
+		"roomTaskID" int4,
+		"roomCustomerID" int4,
 		"path" varchar(50),
+		"isSuccessfullyTested" bool,
+		"isAccepted" bool,
 		
-		FOREIGN KEY ("roomID") REFERENCES "Room" ("roomID") ON UPDATE CASCADE ON DELETE CASCADE
+		FOREIGN KEY ("roomTaskID") REFERENCES "RoomTask" ("roomTaskID") ON UPDATE CASCADE ON DELETE CASCADE,
+		FOREIGN KEY ("roomCustomerID") REFERENCES "RoomCustomer" ("roomCustomerID") ON UPDATE CASCADE ON DELETE CASCADE
 	);
 
 	RETURN;
@@ -1086,12 +1093,22 @@ END$BODY$
 -- ----------------------------
 -- Function structure for insert_room_solution
 -- ----------------------------
-DROP FUNCTION IF EXISTS "public"."insert_room_solution"("room_id" int4, "solution_path" varchar);
-CREATE OR REPLACE FUNCTION "public"."insert_room_solution"("room_id" int4, "solution_path" varchar)
+DROP FUNCTION IF EXISTS "public"."insert_room_solution"("room_task_id" int4, "customer_id" int4, "solution_path" varchar);
+CREATE OR REPLACE FUNCTION "public"."insert_room_solution"("room_task_id" int4, "customer_id" int4, "solution_path" varchar)
   RETURNS "pg_catalog"."void" AS $BODY$BEGIN
 	
-	IF NOT EXISTS (SELECT * FROM "RoomSolution" WHERE "roomID"="room_id" AND "path"="solution_path") THEN
-		INSERT INTO "RoomSolution" ("roomID", "path") VALUES ("room_id", "solution_path");
+	IF NOT EXISTS (SELECT * FROM "RoomSolution" AS rs
+		LEFT JOIN "RoomTask" AS rt ON rt."roomTaskID" = "room_task_id"
+		LEFT JOIN "RoomCustomer" AS rc ON rc."customerID" = "customer_id" AND rc."roomID" = rt."roomID"
+		WHERE rs."roomTaskID" = "room_task_id" AND "customerID" = "customer_id")
+	THEN
+		INSERT INTO "RoomSolution" ("roomCustomerID", "roomTaskID", "path", "isSuccessfullyTested", "isAccepted")
+			VALUES (
+				(SELECT "roomCustomerID" FROM "RoomCustomer" AS rc
+					LEFT JOIN "RoomTask" AS rt ON rt."roomTaskID" = "room_task_id"
+					WHERE rc."customerID" = "customer_id" AND rc."roomID" = rt."roomID"),
+				"room_task_id", "solution_path", FALSE, FALSE
+			);
 	END IF;
 
 	RETURN;
@@ -1172,6 +1189,24 @@ END$BODY$
   COST 100;
 
 -- ----------------------------
+-- Function structure for is_solution_exists
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."is_solution_exists"("room_task_id" int4, "customer_id" int4);
+CREATE OR REPLACE FUNCTION "public"."is_solution_exists"("room_task_id" int4, "customer_id" int4)
+  RETURNS "pg_catalog"."bool" AS $BODY$BEGIN
+
+	RETURN EXISTS(SELECT * FROM "RoomSolution" AS rs
+		WHERE "roomTaskID" = "room_task_id" AND rs."roomCustomerID" = 
+		(SELECT "roomCustomerID" FROM "RoomCustomer"
+			LEFT JOIN "RoomTask" AS rt ON rt."roomTaskID" = "room_task_id"
+			WHERE "customerID" = "customer_id"
+		));
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
 -- Function structure for sec_get_auth
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."sec_get_auth"("username" varchar);
@@ -1203,6 +1238,25 @@ END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
   ROWS 1000;
+
+-- ----------------------------
+-- Function structure for set_solution_successfully_tested
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."set_solution_successfully_tested"("room_task_id" int4, "customer_id" int4);
+CREATE OR REPLACE FUNCTION "public"."set_solution_successfully_tested"("room_task_id" int4, "customer_id" int4)
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	UPDATE "RoomSolution" AS rs SET "isSuccessfullyTested" = TRUE
+		WHERE "roomTaskID" = "room_task_id" AND rs."roomCustomerID" = 
+		(SELECT "roomCustomerID" FROM "RoomCustomer"
+			LEFT JOIN "RoomTask" AS rt ON rt."roomTaskID" = "room_task_id"
+			WHERE "customerID" = "customer_id"
+		);
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
 
 -- ----------------------------
 -- Alter sequences owned by
@@ -1258,7 +1312,7 @@ SELECT setval('"public"."RoomRole_roomRoleID_seq"', 3, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomSolution_roomSolutionID_seq"
 OWNED BY "public"."RoomSolution"."roomSolutionID";
-SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 14, true);
+SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 16, true);
 
 -- ----------------------------
 -- Alter sequences owned by
@@ -1389,7 +1443,8 @@ ALTER TABLE "public"."RoomCustomerRole" ADD CONSTRAINT "RoomCustomerRole_roomRol
 -- ----------------------------
 -- Foreign Keys structure for table RoomSolution
 -- ----------------------------
-ALTER TABLE "public"."RoomSolution" ADD CONSTRAINT "RoomSolution_roomID_fkey" FOREIGN KEY ("roomID") REFERENCES "public"."Room" ("roomID") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."RoomSolution" ADD CONSTRAINT "RoomSolution_roomCustomerID_fkey" FOREIGN KEY ("roomCustomerID") REFERENCES "public"."RoomCustomer" ("roomCustomerID") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."RoomSolution" ADD CONSTRAINT "RoomSolution_roomTaskID_fkey" FOREIGN KEY ("roomTaskID") REFERENCES "public"."RoomTask" ("roomTaskID") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- ----------------------------
 -- Foreign Keys structure for table RoomTask
