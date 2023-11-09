@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 08/11/2023 22:56:48
+ Date: 09/11/2023 21:57:25
 */
 
 
@@ -167,6 +167,7 @@ CREATE TABLE "public"."Customer" (
 INSERT INTO "public"."Customer" VALUES (6, 'zalupa', '$2a$10$bft2fzlgly/2ekNn5kz8Q.4YWFHDYdpXUi6hx/0n31G554JhiivAW', 'idinaxui', 4);
 INSERT INTO "public"."Customer" VALUES (8, 'Sawtooth', '$2a$10$.6QS9ezRz6WSo5NMZkhoyetJVDyBASPXMkQXNDJ.1ZH4DpDp2gq/G', 'andrey.y96@mail.ru', 4);
 INSERT INTO "public"."Customer" VALUES (9, 'gfhj', '$2a$10$9Ku2MzpDcy2FrSioImUDte3m4ZbNa7.5Qgt9KItZt1Ja7GR0z.jrG', 'ghhj', 4);
+INSERT INTO "public"."Customer" VALUES (10, 'test', '$2a$10$UA3fLsr29i3JyNh4ztm/B.JkNXW2zcgtFgbZx2IA7uZ4fDoZSl9Xq', 'aaaaa', 4);
 
 -- ----------------------------
 -- Table structure for Role
@@ -218,6 +219,7 @@ CREATE TABLE "public"."RoomCustomer" (
 -- ----------------------------
 INSERT INTO "public"."RoomCustomer" VALUES (5, 15, 6, 1);
 INSERT INTO "public"."RoomCustomer" VALUES (6, 15, 8, 2);
+INSERT INTO "public"."RoomCustomer" VALUES (7, 15, 10, 3);
 
 -- ----------------------------
 -- Table structure for RoomCustomerPost
@@ -281,6 +283,7 @@ CREATE TABLE "public"."RoomCustomerRole" (
 -- ----------------------------
 INSERT INTO "public"."RoomCustomerRole" VALUES (1, 5, 2);
 INSERT INTO "public"."RoomCustomerRole" VALUES (2, 6, 1);
+INSERT INTO "public"."RoomCustomerRole" VALUES (3, 7, 1);
 
 -- ----------------------------
 -- Table structure for RoomRole
@@ -315,7 +318,7 @@ CREATE TABLE "public"."RoomSolution" (
 -- ----------------------------
 -- Records of RoomSolution
 -- ----------------------------
-INSERT INTO "public"."RoomSolution" VALUES (15, 'D:\TES\solutions\15\1\zalupa\sources', 't', 'f', 1, 5);
+INSERT INTO "public"."RoomSolution" VALUES (17, 'D:\TES\solutions\15\1\zalupa\sources', 't', 'f', 1, 5);
 
 -- ----------------------------
 -- Table structure for RoomTask
@@ -814,7 +817,7 @@ DROP FUNCTION IF EXISTS "public"."get_room_customer_role_by_customer_id"("id" in
 CREATE OR REPLACE FUNCTION "public"."get_room_customer_role_by_customer_id"("id" int4)
   RETURNS SETOF "public"."RoomCustomerRole" AS $BODY$BEGIN
 
-	RETURN QUERY SELECT * FROM "RoomCustomerRole" WHERE "customerID" = "id";
+	RETURN QUERY SELECT * FROM "RoomCustomerRole" WHERE "roomCustomerID" = "id";
 	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
@@ -876,6 +879,25 @@ CREATE OR REPLACE FUNCTION "public"."get_room_role_by_name"("role_name" varchar)
 
 	RETURN QUERY SELECT * FROM "RoomRole" WHERE "name" = "role_name";
 	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_room_solution
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_solution"("room_task_id" int4, "customer_id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_solution"("room_task_id" int4, "customer_id" int4)
+  RETURNS SETOF "public"."RoomSolution" AS $BODY$BEGIN
+	
+	RETURN QUERY SELECT * FROM "RoomSolution" AS rs WHERE "roomTaskID" = "room_task_id" AND
+		rs."roomCustomerID" = 
+		(SELECT "roomCustomerID" FROM "RoomCustomer"
+			LEFT JOIN "RoomTask" AS rt ON rt."roomTaskID" = "room_task_id"
+			WHERE "customerID" = "customer_id"
+		);
+
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
@@ -1263,7 +1285,7 @@ END$BODY$
 -- ----------------------------
 ALTER SEQUENCE "public"."Customer_customerID_seq"
 OWNED BY "public"."Customer"."customerID";
-SELECT setval('"public"."Customer_customerID_seq"', 10, true);
+SELECT setval('"public"."Customer_customerID_seq"', 11, true);
 
 -- ----------------------------
 -- Alter sequences owned by
@@ -1284,21 +1306,21 @@ SELECT setval('"public"."RoomCustomerPost_roomPostID_seq"', 31, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerRole_roomCustomerRoleID_seq"
 OWNED BY "public"."RoomCustomerRole"."roomCustomerRoleID";
-SELECT setval('"public"."RoomCustomerRole_roomCustomerRoleID_seq"', 3, true);
+SELECT setval('"public"."RoomCustomerRole_roomCustomerRoleID_seq"', 4, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomer_roomCustomerID_seq"
 OWNED BY "public"."RoomCustomer"."roomCustomerID";
-SELECT setval('"public"."RoomCustomer_roomCustomerID_seq"', 7, true);
+SELECT setval('"public"."RoomCustomer_roomCustomerID_seq"', 8, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomer_variant_seq"
 OWNED BY "public"."RoomCustomer"."variant";
-SELECT setval('"public"."RoomCustomer_variant_seq"', 6, true);
+SELECT setval('"public"."RoomCustomer_variant_seq"', 7, true);
 
 -- ----------------------------
 -- Alter sequences owned by
@@ -1312,7 +1334,7 @@ SELECT setval('"public"."RoomRole_roomRoleID_seq"', 3, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomSolution_roomSolutionID_seq"
 OWNED BY "public"."RoomSolution"."roomSolutionID";
-SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 16, true);
+SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 18, true);
 
 -- ----------------------------
 -- Alter sequences owned by
