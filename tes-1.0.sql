@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 09/11/2023 21:57:25
+ Date: 10/11/2023 22:43:00
 */
 
 
@@ -1004,7 +1004,28 @@ CREATE OR REPLACE FUNCTION "public"."get_room_tasks"("room_id" int4, "start" int
 	RETURN QUERY SELECT * FROM "RoomTask" WHERE "roomID" = "room_id"
 		ORDER BY "added" DESC OFFSET "start" LIMIT "tasks_count";
 
-	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_tasks_with_unverified_solutions
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_tasks_with_unverified_solutions"("room_id" int4, "start" int4, "tasks_count" int4);
+CREATE OR REPLACE FUNCTION "public"."get_tasks_with_unverified_solutions"("room_id" int4, "start" int4, "tasks_count" int4)
+  RETURNS SETOF "public"."RoomTask" AS $BODY$BEGIN
+
+	RETURN QUERY SELECT rt."roomTaskID", rt."roomID", rt."name", rt."description", rt."lastTerm", rt."added"
+		FROM "RoomTask" AS rt
+		LEFT JOIN "RoomSolution" AS rs ON rs."roomTaskID" = rt."roomTaskID"
+		WHERE "roomID" = "room_id" AND EXISTS (
+			SELECT * FROM "RoomSolution" WHERE "roomTaskID" = rt."roomTaskID"
+				AND "isSuccessfullyTested" = TRUE
+				AND	"isAccepted" = FALSE
+		)
+		ORDER BY "added" DESC OFFSET "start" LIMIT "tasks_count";
+		
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
