@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 10/11/2023 22:43:00
+ Date: 11/11/2023 21:07:39
 */
 
 
@@ -1026,6 +1026,23 @@ CREATE OR REPLACE FUNCTION "public"."get_tasks_with_unverified_solutions"("room_
 		)
 		ORDER BY "added" DESC OFFSET "start" LIMIT "tasks_count";
 		
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_unverified_solutions_by_task_id
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_unverified_solutions_by_task_id"("room_task_id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_unverified_solutions_by_task_id"("room_task_id" int4)
+  RETURNS TABLE("roomSolutionID" int4, "customerName" varchar) AS $BODY$BEGIN
+
+	RETURN QUERY SELECT rs."roomSolutionID", c."name" FROM "RoomSolution" AS rs
+		LEFT JOIN "RoomCustomer" AS rc ON rc."roomCustomerID" = rs."roomCustomerID"
+		LEFT JOIN "Customer" AS c ON c."customerID" = rc."customerID"
+		WHERE rs."roomTaskID" = "room_task_id" AND rs."isSuccessfullyTested" = TRUE AND rs."isAccepted" = FALSE;
+	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
