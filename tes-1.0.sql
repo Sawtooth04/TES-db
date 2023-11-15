@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 11/11/2023 21:07:39
+ Date: 15/11/2023 22:38:24
 */
 
 
@@ -32,6 +32,28 @@ CACHE 1;
 -- ----------------------------
 DROP SEQUENCE IF EXISTS "public"."Role_roleID_seq";
 CREATE SEQUENCE "public"."Role_roleID_seq" 
+INCREMENT 1
+MINVALUE  1
+MAXVALUE 2147483647
+START 1
+CACHE 1;
+
+-- ----------------------------
+-- Sequence structure for RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq
+-- ----------------------------
+DROP SEQUENCE IF EXISTS "public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq";
+CREATE SEQUENCE "public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq" 
+INCREMENT 1
+MINVALUE  1
+MAXVALUE 2147483647
+START 1
+CACHE 1;
+
+-- ----------------------------
+-- Sequence structure for RoomCustomerMessage_roomCustomerMessageID_seq
+-- ----------------------------
+DROP SEQUENCE IF EXISTS "public"."RoomCustomerMessage_roomCustomerMessageID_seq";
+CREATE SEQUENCE "public"."RoomCustomerMessage_roomCustomerMessageID_seq" 
 INCREMENT 1
 MINVALUE  1
 MAXVALUE 2147483647
@@ -220,6 +242,43 @@ CREATE TABLE "public"."RoomCustomer" (
 INSERT INTO "public"."RoomCustomer" VALUES (5, 15, 6, 1);
 INSERT INTO "public"."RoomCustomer" VALUES (6, 15, 8, 2);
 INSERT INTO "public"."RoomCustomer" VALUES (7, 15, 10, 3);
+
+-- ----------------------------
+-- Table structure for RoomCustomerMessage
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."RoomCustomerMessage";
+CREATE TABLE "public"."RoomCustomerMessage" (
+  "roomCustomerMessageID" int4 NOT NULL DEFAULT nextval('"RoomCustomerMessage_roomCustomerMessageID_seq"'::regclass),
+  "roomCustomerID" int4,
+  "roomTaskID" int4,
+  "sent" timestamp(6),
+  "text" varchar(300) COLLATE "pg_catalog"."default"
+)
+;
+
+-- ----------------------------
+-- Records of RoomCustomerMessage
+-- ----------------------------
+INSERT INTO "public"."RoomCustomerMessage" VALUES (2, 6, 1, '2023-11-15 20:46:00.622904', 'Test');
+INSERT INTO "public"."RoomCustomerMessage" VALUES (3, 7, 1, '2023-11-15 22:35:45.780799', 'Test message');
+INSERT INTO "public"."RoomCustomerMessage" VALUES (4, 7, 1, '2023-11-15 22:37:44.744195', 'Test message');
+
+-- ----------------------------
+-- Table structure for RoomCustomerMessageRecipient
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."RoomCustomerMessageRecipient";
+CREATE TABLE "public"."RoomCustomerMessageRecipient" (
+  "roomCustomerMessageRecipientID" int4 NOT NULL DEFAULT nextval('"RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"'::regclass),
+  "roomCustomerMessageID" int4,
+  "roomCustomerID" int4
+)
+;
+
+-- ----------------------------
+-- Records of RoomCustomerMessageRecipient
+-- ----------------------------
+INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (2, 2, 5);
+INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (3, 4, 5);
 
 -- ----------------------------
 -- Table structure for RoomCustomerPost
@@ -441,6 +500,50 @@ CREATE OR REPLACE FUNCTION "public"."create_role_table"()
 	);
 	
 	INSERT INTO "Role" (name) VALUES("user");
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
+-- Function structure for create_room_customer_message_recipiend_table
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."create_room_customer_message_recipiend_table"();
+CREATE OR REPLACE FUNCTION "public"."create_room_customer_message_recipiend_table"()
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	CREATE TABLE "RoomCustomerMessageRecipient" (
+		"roomCustomerMessageRecipientID" serial PRIMARY KEY,
+		"roomCustomerMessageID" int4,
+		"roomCustomerID" int4,
+		
+		FOREIGN KEY ("roomCustomerMessageID") REFERENCES "RoomCustomerMessage" ("roomCustomerMessageID") ON UPDATE CASCADE ON DELETE CASCADE,
+		FOREIGN KEY ("roomCustomerID") REFERENCES "RoomCustomer" ("roomCustomerID") ON UPDATE CASCADE ON DELETE CASCADE
+	);
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
+-- Function structure for create_room_customer_message_table
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."create_room_customer_message_table"();
+CREATE OR REPLACE FUNCTION "public"."create_room_customer_message_table"()
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	CREATE TABLE "RoomCustomerMessage" (
+		"roomCustomerMessageID" serial PRIMARY KEY,
+		"roomCustomerID" int4,
+		"roomTaskID" int4,
+		"sent" timestamp,
+		"text" varchar(300),
+		
+		FOREIGN KEY ("roomCustomerID") REFERENCES "RoomCustomer" ("roomCustomerID") ON UPDATE CASCADE ON DELETE CASCADE,
+		FOREIGN KEY ("roomTaskID") REFERENCES "RoomTask" ("roomTaskID") ON UPDATE CASCADE ON DELETE CASCADE)
+		;
 
 	RETURN;
 END$BODY$
@@ -772,6 +875,29 @@ CREATE OR REPLACE FUNCTION "public"."get_room_customer_by_id"("id" int4)
 
 	RETURN QUERY SELECT * FROM "RoomCustomer" WHERE "RoomCustomer"."roomCustomerID" = "id";
 
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_room_customer_messages
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_customer_messages"("room_task_id" int4, "room_customer_id" int4, "start" int4, "messages_count" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_customer_messages"("room_task_id" int4, "room_customer_id" int4, "start" int4, "messages_count" int4)
+  RETURNS TABLE("roomCustomerMessageID" int4, "name" varchar, "text" varchar, "sent" timestamp, "own" bool) AS $BODY$BEGIN
+
+	RETURN QUERY SELECT rcm."roomCustomerMessageID", c."name", rcm."text", rcm."sent", rcm."roomCustomerID"
+		= "room_customer_id"
+		FROM "RoomCustomerMessageRecipient" AS rcmr
+		LEFT JOIN "RoomCustomerMessage" AS rcm ON rcm."roomCustomerMessageID" = rcmr."roomCustomerMessageID"
+		LEFT JOIN "RoomCustomer" AS rc ON rc."roomCustomerID" = rcm."roomCustomerID"
+		LEFT JOIN "Customer" AS c ON c."customerID" = rc."customerID"
+	WHERE rcm."roomTaskID" = "room_task_id"
+	AND (rcm."roomCustomerID" = "room_customer_id" OR rcmr."roomCustomerID" = "room_customer_id")
+	ORDER BY "sent" DESC OFFSET "start" LIMIT "messages_count";
+
+	RETURN;
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
@@ -1151,6 +1277,35 @@ END$BODY$
   COST 100;
 
 -- ----------------------------
+-- Function structure for insert_room_member_message
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."insert_room_member_message"("room_customer_id" int4, "room_task_id" int4, "text" varchar);
+CREATE OR REPLACE FUNCTION "public"."insert_room_member_message"("room_customer_id" int4, "room_task_id" int4, "text" varchar)
+  RETURNS "pg_catalog"."void" AS $BODY$
+	DECLARE
+		record_id int4;
+		r record;
+	BEGIN
+		
+	INSERT INTO "RoomCustomerMessage" ("roomCustomerID", "roomTaskID", "sent", "text")
+			VALUES ("room_customer_id", "room_task_id", now(), "text") RETURNING "roomCustomerMessageID" INTO record_id;
+	
+	FOR r IN 
+		SELECT * FROM "RoomCustomer" AS rc
+			LEFT JOIN "RoomCustomerRole" AS rcr ON rcr."roomCustomerID" = rc."roomCustomerID"
+			LEFT JOIN "RoomRole" AS rr ON rr."roomRoleID" = rcr."roomRoleID"
+			WHERE rcr."roomRoleID" = (SELECT "roomRoleID" FROM "RoomRole" WHERE "name" = 'teacher') 
+	LOOP
+		INSERT INTO "RoomCustomerMessageRecipient" ("roomCustomerMessageID", "roomCustomerID")
+				VALUES (record_id, r."roomCustomerID");
+	END LOOP;
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
 -- Function structure for insert_room_solution
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."insert_room_solution"("room_task_id" int4, "customer_id" int4, "solution_path" varchar);
@@ -1216,6 +1371,27 @@ CREATE OR REPLACE FUNCTION "public"."insert_room_task_variant"("room_task_ID" in
 		VALUES ("room_task_ID", "variant", "path", "description");
 
   RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
+-- Function structure for insert_room_teacher_message
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."insert_room_teacher_message"("room_customer_id" int4, "room_task_id" int4, "text" varchar, "recipient" int4);
+CREATE OR REPLACE FUNCTION "public"."insert_room_teacher_message"("room_customer_id" int4, "room_task_id" int4, "text" varchar, "recipient" int4)
+  RETURNS "pg_catalog"."void" AS $BODY$
+	DECLARE
+		record_id int4;
+		r record;
+	BEGIN
+		
+	INSERT INTO "RoomCustomerMessage" ("roomCustomerID", "roomTaskID", "sent", "text")
+			VALUES ("room_customer_id", "room_task_id", now(), "text") RETURNING "roomCustomerMessageID" INTO record_id;
+	INSERT INTO "RoomCustomerMessageRecipient" ("roomCustomerMessageID", "roomCustomerID")
+				VALUES (record_id, "recipient");
+
+	RETURN;
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
@@ -1335,6 +1511,20 @@ SELECT setval('"public"."Role_roleID_seq"', 7, true);
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
+ALTER SEQUENCE "public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"
+OWNED BY "public"."RoomCustomerMessageRecipient"."roomCustomerMessageRecipientID";
+SELECT setval('"public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"', 4, true);
+
+-- ----------------------------
+-- Alter sequences owned by
+-- ----------------------------
+ALTER SEQUENCE "public"."RoomCustomerMessage_roomCustomerMessageID_seq"
+OWNED BY "public"."RoomCustomerMessage"."roomCustomerMessageID";
+SELECT setval('"public"."RoomCustomerMessage_roomCustomerMessageID_seq"', 5, true);
+
+-- ----------------------------
+-- Alter sequences owned by
+-- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerPost_roomPostID_seq"
 OWNED BY "public"."RoomCustomerPost"."roomCustomerPostID";
 SELECT setval('"public"."RoomCustomerPost_roomPostID_seq"', 31, true);
@@ -1428,6 +1618,16 @@ ALTER TABLE "public"."Room" ADD CONSTRAINT "Room_pkey" PRIMARY KEY ("roomID");
 ALTER TABLE "public"."RoomCustomer" ADD CONSTRAINT "RoomCustomer_pkey" PRIMARY KEY ("roomCustomerID");
 
 -- ----------------------------
+-- Primary Key structure for table RoomCustomerMessage
+-- ----------------------------
+ALTER TABLE "public"."RoomCustomerMessage" ADD CONSTRAINT "RoomCustomerMessage_pkey" PRIMARY KEY ("roomCustomerMessageID");
+
+-- ----------------------------
+-- Primary Key structure for table RoomCustomerMessageRecipient
+-- ----------------------------
+ALTER TABLE "public"."RoomCustomerMessageRecipient" ADD CONSTRAINT "RoomCustomerMessageRecipient_pkey" PRIMARY KEY ("roomCustomerMessageRecipientID");
+
+-- ----------------------------
 -- Primary Key structure for table RoomCustomerPost
 -- ----------------------------
 ALTER TABLE "public"."RoomCustomerPost" ADD CONSTRAINT "RoomCustomerPost_pkey" PRIMARY KEY ("roomCustomerPostID");
@@ -1488,6 +1688,18 @@ ALTER TABLE "public"."Room" ADD CONSTRAINT "Room_customerID_fkey" FOREIGN KEY ("
 -- ----------------------------
 ALTER TABLE "public"."RoomCustomer" ADD CONSTRAINT "RoomCustomer_customerID_fkey" FOREIGN KEY ("customerID") REFERENCES "public"."Customer" ("customerID") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "public"."RoomCustomer" ADD CONSTRAINT "RoomCustomer_roomID_fkey" FOREIGN KEY ("roomID") REFERENCES "public"."Room" ("roomID") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- ----------------------------
+-- Foreign Keys structure for table RoomCustomerMessage
+-- ----------------------------
+ALTER TABLE "public"."RoomCustomerMessage" ADD CONSTRAINT "RoomCustomerMessage_roomCustomerID_fkey" FOREIGN KEY ("roomCustomerID") REFERENCES "public"."RoomCustomer" ("roomCustomerID") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."RoomCustomerMessage" ADD CONSTRAINT "RoomCustomerMessage_roomTaskID_fkey" FOREIGN KEY ("roomTaskID") REFERENCES "public"."RoomTask" ("roomTaskID") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- ----------------------------
+-- Foreign Keys structure for table RoomCustomerMessageRecipient
+-- ----------------------------
+ALTER TABLE "public"."RoomCustomerMessageRecipient" ADD CONSTRAINT "RoomCustomerMessageRecipient_roomCustomerID_fkey" FOREIGN KEY ("roomCustomerID") REFERENCES "public"."RoomCustomer" ("roomCustomerID") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."RoomCustomerMessageRecipient" ADD CONSTRAINT "RoomCustomerMessageRecipient_roomCustomerMessageID_fkey" FOREIGN KEY ("roomCustomerMessageID") REFERENCES "public"."RoomCustomerMessage" ("roomCustomerMessageID") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- ----------------------------
 -- Foreign Keys structure for table RoomCustomerPost
