@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 15/11/2023 22:38:24
+ Date: 16/11/2023 21:48:38
 */
 
 
@@ -252,16 +252,16 @@ CREATE TABLE "public"."RoomCustomerMessage" (
   "roomCustomerID" int4,
   "roomTaskID" int4,
   "sent" timestamp(6),
-  "text" varchar(300) COLLATE "pg_catalog"."default"
+  "text" varchar(300) COLLATE "pg_catalog"."default",
+  "isRead" bool
 )
 ;
 
 -- ----------------------------
 -- Records of RoomCustomerMessage
 -- ----------------------------
-INSERT INTO "public"."RoomCustomerMessage" VALUES (2, 6, 1, '2023-11-15 20:46:00.622904', 'Test');
-INSERT INTO "public"."RoomCustomerMessage" VALUES (3, 7, 1, '2023-11-15 22:35:45.780799', 'Test message');
-INSERT INTO "public"."RoomCustomerMessage" VALUES (4, 7, 1, '2023-11-15 22:37:44.744195', 'Test message');
+INSERT INTO "public"."RoomCustomerMessage" VALUES (6, 5, 1, '2023-11-10 19:51:27', 'First message from teacher', 'f');
+INSERT INTO "public"."RoomCustomerMessage" VALUES (7, 7, 1, '2023-11-11 19:51:59', 'Message from member', 'f');
 
 -- ----------------------------
 -- Table structure for RoomCustomerMessageRecipient
@@ -277,8 +277,8 @@ CREATE TABLE "public"."RoomCustomerMessageRecipient" (
 -- ----------------------------
 -- Records of RoomCustomerMessageRecipient
 -- ----------------------------
-INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (2, 2, 5);
-INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (3, 4, 5);
+INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (5, 6, 7);
+INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (6, 7, 5);
 
 -- ----------------------------
 -- Table structure for RoomCustomerPost
@@ -540,10 +540,10 @@ CREATE OR REPLACE FUNCTION "public"."create_room_customer_message_table"()
 		"roomTaskID" int4,
 		"sent" timestamp,
 		"text" varchar(300),
+		"isRead" bool,
 		
 		FOREIGN KEY ("roomCustomerID") REFERENCES "RoomCustomer" ("roomCustomerID") ON UPDATE CASCADE ON DELETE CASCADE,
-		FOREIGN KEY ("roomTaskID") REFERENCES "RoomTask" ("roomTaskID") ON UPDATE CASCADE ON DELETE CASCADE)
-		;
+		FOREIGN KEY ("roomTaskID") REFERENCES "RoomTask" ("roomTaskID") ON UPDATE CASCADE ON DELETE CASCADE);
 
 	RETURN;
 END$BODY$
@@ -885,10 +885,22 @@ END$BODY$
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."get_room_customer_messages"("room_task_id" int4, "room_customer_id" int4, "start" int4, "messages_count" int4);
 CREATE OR REPLACE FUNCTION "public"."get_room_customer_messages"("room_task_id" int4, "room_customer_id" int4, "start" int4, "messages_count" int4)
-  RETURNS TABLE("roomCustomerMessageID" int4, "name" varchar, "text" varchar, "sent" timestamp, "own" bool) AS $BODY$BEGIN
+  RETURNS TABLE("roomCustomerMessageID" int4, "name" varchar, "text" varchar, "sent" timestamp, "own" bool, "isRead" bool) AS $BODY$
+	DECLARE
+		r record;
+	BEGIN
+	
+	FOR r IN 
+		SELECT * FROM "RoomCustomerMessage" AS rcm
+			LEFT JOIN "RoomCustomerMessageRecipient" AS rcmr ON rcmr."roomCustomerMessageID" = rcm."roomCustomerMessageID"
+			WHERE rcm."roomTaskID" = "room_task_id" AND rcmr."roomCustomerID" = "room_customer_id"
+			ORDER BY "sent" DESC OFFSET "start" LIMIT "messages_count"
+	LOOP
+		UPDATE "RoomCustomerMessage" SET "isRead" = TRUE;
+	END LOOP;
 
 	RETURN QUERY SELECT rcm."roomCustomerMessageID", c."name", rcm."text", rcm."sent", rcm."roomCustomerID"
-		= "room_customer_id"
+		= "room_customer_id", rcm."isRead"
 		FROM "RoomCustomerMessageRecipient" AS rcmr
 		LEFT JOIN "RoomCustomerMessage" AS rcm ON rcm."roomCustomerMessageID" = rcmr."roomCustomerMessageID"
 		LEFT JOIN "RoomCustomer" AS rc ON rc."roomCustomerID" = rcm."roomCustomerID"
@@ -897,7 +909,39 @@ CREATE OR REPLACE FUNCTION "public"."get_room_customer_messages"("room_task_id" 
 	AND (rcm."roomCustomerID" = "room_customer_id" OR rcmr."roomCustomerID" = "room_customer_id")
 	ORDER BY "sent" DESC OFFSET "start" LIMIT "messages_count";
 
-	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_room_customer_messages_by_member_id
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_customer_messages_by_member_id"("room_task_id" int4, "room_customer_id" int4, "member_id" int4, "start" int4, "messages_count" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_customer_messages_by_member_id"("room_task_id" int4, "room_customer_id" int4, "member_id" int4, "start" int4, "messages_count" int4)
+  RETURNS TABLE("roomCustomerMessageID" int4, "name" varchar, "text" varchar, "sent" timestamp, "own" bool, "isRead" bool) AS $BODY$
+	DECLARE
+		r record;
+	BEGIN
+	
+	FOR r IN 
+		SELECT * FROM "RoomCustomerMessage" AS rcm
+			LEFT JOIN "RoomCustomerMessageRecipient" AS rcmr ON rcmr."roomCustomerMessageID" = rcm."roomCustomerMessageID"
+			WHERE rcm."roomTaskID" = "room_task_id" AND rcmr."roomCustomerID" = "room_customer_id"
+			ORDER BY "sent" DESC OFFSET "start" LIMIT "messages_count"
+	LOOP
+		UPDATE "RoomCustomerMessage" SET "isRead" = TRUE;
+	END LOOP;
+
+	RETURN QUERY SELECT rcm."roomCustomerMessageID", c."name", rcm."text", rcm."sent", rcm."roomCustomerID"
+		= "room_customer_id", rcm."isRead"
+		FROM "RoomCustomerMessageRecipient" AS rcmr
+		LEFT JOIN "RoomCustomerMessage" AS rcm ON rcm."roomCustomerMessageID" = rcmr."roomCustomerMessageID"
+		LEFT JOIN "RoomCustomer" AS rc ON rc."roomCustomerID" = rcm."roomCustomerID"
+		LEFT JOIN "Customer" AS c ON c."customerID" = rc."customerID"
+	WHERE rcm."roomTaskID" = "room_task_id"
+	AND (rcm."roomCustomerID" = "member_id" OR rcmr."roomCustomerID" = "member_id")
+	ORDER BY "sent" DESC OFFSET "start" LIMIT "messages_count";
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
@@ -962,6 +1006,25 @@ CREATE OR REPLACE FUNCTION "public"."get_room_customers_by_role_id"("room_id" in
 		LEFT JOIN "Customer" AS c on c."customerID" = rc."customerID"
 		WHERE rcr."roomRoleID" = "role_id" AND rc."roomID" = "room_id"
 		ORDER BY rc."roomCustomerID" ASC;
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_room_messages_grouped_by_name
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_messages_grouped_by_name"("room_id" int4, "room_customer_id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_messages_grouped_by_name"("room_id" int4, "room_customer_id" int4)
+  RETURNS TABLE("name" varchar, "isRead" bool) AS $BODY$BEGIN
+	
+	RETURN QUERY SELECT c."name", bool_or(rcm."isRead") FROM "RoomCustomerMessage" AS rcm
+		LEFT JOIN "RoomCustomer" AS rc ON rc."roomCustomerID" = rcm."roomCustomerID"
+		LEFT JOIN "Customer" AS c ON c."customerID" = rc."customerID"
+		LEFT JOIN "RoomTask" AS rt ON rt."roomTaskID" = rcm."roomTaskID"
+		WHERE rt."roomID" = "room_id" AND rcm."roomCustomerID" != "room_customer_id"
+		GROUP BY c."name";
 	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
@@ -1287,8 +1350,9 @@ CREATE OR REPLACE FUNCTION "public"."insert_room_member_message"("room_customer_
 		r record;
 	BEGIN
 		
-	INSERT INTO "RoomCustomerMessage" ("roomCustomerID", "roomTaskID", "sent", "text")
-			VALUES ("room_customer_id", "room_task_id", now(), "text") RETURNING "roomCustomerMessageID" INTO record_id;
+	INSERT INTO "RoomCustomerMessage" ("roomCustomerID", "roomTaskID", "sent", "text", "isRead")
+			VALUES ("room_customer_id", "room_task_id", now(), "text", FALSE)
+			RETURNING "roomCustomerMessageID" INTO record_id;
 	
 	FOR r IN 
 		SELECT * FROM "RoomCustomer" AS rc
@@ -1386,8 +1450,9 @@ CREATE OR REPLACE FUNCTION "public"."insert_room_teacher_message"("room_customer
 		r record;
 	BEGIN
 		
-	INSERT INTO "RoomCustomerMessage" ("roomCustomerID", "roomTaskID", "sent", "text")
-			VALUES ("room_customer_id", "room_task_id", now(), "text") RETURNING "roomCustomerMessageID" INTO record_id;
+	INSERT INTO "RoomCustomerMessage" ("roomCustomerID", "roomTaskID", "sent", "text", "isRead")
+			VALUES ("room_customer_id", "room_task_id", now(), "text", FALSE)
+			RETURNING "roomCustomerMessageID" INTO record_id;
 	INSERT INTO "RoomCustomerMessageRecipient" ("roomCustomerMessageID", "roomCustomerID")
 				VALUES (record_id, "recipient");
 
@@ -1513,14 +1578,14 @@ SELECT setval('"public"."Role_roleID_seq"', 7, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"
 OWNED BY "public"."RoomCustomerMessageRecipient"."roomCustomerMessageRecipientID";
-SELECT setval('"public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"', 4, true);
+SELECT setval('"public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"', 7, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerMessage_roomCustomerMessageID_seq"
 OWNED BY "public"."RoomCustomerMessage"."roomCustomerMessageID";
-SELECT setval('"public"."RoomCustomerMessage_roomCustomerMessageID_seq"', 5, true);
+SELECT setval('"public"."RoomCustomerMessage_roomCustomerMessageID_seq"', 8, true);
 
 -- ----------------------------
 -- Alter sequences owned by
