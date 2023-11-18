@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 16/11/2023 21:48:38
+ Date: 18/11/2023 22:35:44
 */
 
 
@@ -241,7 +241,7 @@ CREATE TABLE "public"."RoomCustomer" (
 -- ----------------------------
 INSERT INTO "public"."RoomCustomer" VALUES (5, 15, 6, 1);
 INSERT INTO "public"."RoomCustomer" VALUES (6, 15, 8, 2);
-INSERT INTO "public"."RoomCustomer" VALUES (7, 15, 10, 3);
+INSERT INTO "public"."RoomCustomer" VALUES (7, 15, 10, 1);
 
 -- ----------------------------
 -- Table structure for RoomCustomerMessage
@@ -260,8 +260,9 @@ CREATE TABLE "public"."RoomCustomerMessage" (
 -- ----------------------------
 -- Records of RoomCustomerMessage
 -- ----------------------------
-INSERT INTO "public"."RoomCustomerMessage" VALUES (6, 5, 1, '2023-11-10 19:51:27', 'First message from teacher', 'f');
-INSERT INTO "public"."RoomCustomerMessage" VALUES (7, 7, 1, '2023-11-11 19:51:59', 'Message from member', 'f');
+INSERT INTO "public"."RoomCustomerMessage" VALUES (14, 7, 1, '2023-11-18 22:15:10.912578', 'Dobriy den! Podskazhite gde oshibka', 't');
+INSERT INTO "public"."RoomCustomerMessage" VALUES (15, 5, 1, '2023-11-18 22:19:19.566543', 'Ya eby? Smotri gde sam nakosyachil', 't');
+INSERT INTO "public"."RoomCustomerMessage" VALUES (16, 5, 1, '2023-11-18 22:25:41.158212', 'Xarosh, krasavchik', 't');
 
 -- ----------------------------
 -- Table structure for RoomCustomerMessageRecipient
@@ -277,8 +278,9 @@ CREATE TABLE "public"."RoomCustomerMessageRecipient" (
 -- ----------------------------
 -- Records of RoomCustomerMessageRecipient
 -- ----------------------------
-INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (5, 6, 7);
-INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (6, 7, 5);
+INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (13, 14, 5);
+INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (14, 15, 7);
+INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (15, 16, 7);
 
 -- ----------------------------
 -- Table structure for RoomCustomerPost
@@ -377,7 +379,7 @@ CREATE TABLE "public"."RoomSolution" (
 -- ----------------------------
 -- Records of RoomSolution
 -- ----------------------------
-INSERT INTO "public"."RoomSolution" VALUES (17, 'D:\TES\solutions\15\1\zalupa\sources', 't', 'f', 1, 5);
+INSERT INTO "public"."RoomSolution" VALUES (18, 'D:\TES\solutions\15\1\test\sources', 'f', 'f', 1, 7);
 
 -- ----------------------------
 -- Table structure for RoomTask
@@ -941,7 +943,7 @@ CREATE OR REPLACE FUNCTION "public"."get_room_customer_messages_by_member_id"("r
 		LEFT JOIN "Customer" AS c ON c."customerID" = rc."customerID"
 	WHERE rcm."roomTaskID" = "room_task_id"
 	AND (rcm."roomCustomerID" = "member_id" OR rcmr."roomCustomerID" = "member_id")
-	ORDER BY "sent" DESC OFFSET "start" LIMIT "messages_count";
+	ORDER BY "sent" ASC OFFSET "start" LIMIT "messages_count";
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
@@ -1017,14 +1019,15 @@ END$BODY$
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."get_room_messages_grouped_by_name"("room_id" int4, "room_customer_id" int4);
 CREATE OR REPLACE FUNCTION "public"."get_room_messages_grouped_by_name"("room_id" int4, "room_customer_id" int4)
-  RETURNS TABLE("name" varchar, "isRead" bool) AS $BODY$BEGIN
+  RETURNS TABLE("roomCustomerID" int4, "roomTaskID" int4, "name" varchar, "isRead" bool) AS $BODY$BEGIN
 	
-	RETURN QUERY SELECT c."name", bool_or(rcm."isRead") FROM "RoomCustomerMessage" AS rcm
+	RETURN QUERY SELECT rcm."roomCustomerID", rt."roomTaskID", c."name", bool_or(rcm."isRead")
+		FROM "RoomCustomerMessage" AS rcm
 		LEFT JOIN "RoomCustomer" AS rc ON rc."roomCustomerID" = rcm."roomCustomerID"
 		LEFT JOIN "Customer" AS c ON c."customerID" = rc."customerID"
 		LEFT JOIN "RoomTask" AS rt ON rt."roomTaskID" = rcm."roomTaskID"
 		WHERE rt."roomID" = "room_id" AND rcm."roomCustomerID" != "room_customer_id"
-		GROUP BY c."name";
+		GROUP BY c."name", rcm."roomCustomerID", rt."roomTaskID";
 	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
@@ -1541,6 +1544,36 @@ END$BODY$
   ROWS 1000;
 
 -- ----------------------------
+-- Function structure for set_room_solution_accepted
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."set_room_solution_accepted"("room_solution_id" int4);
+CREATE OR REPLACE FUNCTION "public"."set_room_solution_accepted"("room_solution_id" int4)
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	UPDATE "RoomSolution" SET "isAccepted" = TRUE
+		WHERE "roomSolutionID" = "room_solution_id";
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
+-- Function structure for set_room_solution_declined
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."set_room_solution_declined"("room_solution_id" int4);
+CREATE OR REPLACE FUNCTION "public"."set_room_solution_declined"("room_solution_id" int4)
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	UPDATE "RoomSolution" SET "isAccepted" = FALSE, "isSuccessfullyTested" = FALSE
+		WHERE "roomSolutionID" = "room_solution_id";
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
 -- Function structure for set_solution_successfully_tested
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."set_solution_successfully_tested"("room_task_id" int4, "customer_id" int4);
@@ -1578,14 +1611,14 @@ SELECT setval('"public"."Role_roleID_seq"', 7, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"
 OWNED BY "public"."RoomCustomerMessageRecipient"."roomCustomerMessageRecipientID";
-SELECT setval('"public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"', 7, true);
+SELECT setval('"public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"', 16, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerMessage_roomCustomerMessageID_seq"
 OWNED BY "public"."RoomCustomerMessage"."roomCustomerMessageID";
-SELECT setval('"public"."RoomCustomerMessage_roomCustomerMessageID_seq"', 8, true);
+SELECT setval('"public"."RoomCustomerMessage_roomCustomerMessageID_seq"', 17, true);
 
 -- ----------------------------
 -- Alter sequences owned by
@@ -1627,7 +1660,7 @@ SELECT setval('"public"."RoomRole_roomRoleID_seq"', 3, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomSolution_roomSolutionID_seq"
 OWNED BY "public"."RoomSolution"."roomSolutionID";
-SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 18, true);
+SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 19, true);
 
 -- ----------------------------
 -- Alter sequences owned by
