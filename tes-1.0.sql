@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 18/11/2023 22:35:44
+ Date: 20/11/2023 22:54:41
 */
 
 
@@ -1159,12 +1159,26 @@ END$BODY$
 -- ----------------------------
 -- Function structure for get_room_task_variant
 -- ----------------------------
-DROP FUNCTION IF EXISTS "public"."get_room_task_variant"("room_task_id" int4, "variant" int4);
-CREATE OR REPLACE FUNCTION "public"."get_room_task_variant"("room_task_id" int4, "variant" int4)
-  RETURNS SETOF "public"."RoomTaskVariant" AS $BODY$BEGIN
+DROP FUNCTION IF EXISTS "public"."get_room_task_variant"("room_task_id" int4, "customer_variant" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_task_variant"("room_task_id" int4, "customer_variant" int4)
+  RETURNS SETOF "public"."RoomTaskVariant" AS $BODY$
+	DECLARE
+		r record;
+	BEGIN
   
-  RETURN QUERY SELECT * FROM "RoomTaskVariant" WHERE "RoomTaskVariant"."roomTaskID" = "room_task_id"
-		AND "RoomTaskVariant"."variant" = "variant";
+	SELECT * INTO r FROM "RoomTaskVariant" WHERE "RoomTaskVariant"."roomTaskID" = "room_task_id"
+		AND "RoomTaskVariant"."variant" = "customer_variant";
+		
+	IF r IS NOT NULL THEN
+		RETURN NEXT r;
+		RETURN;
+	ELSE
+		RETURN QUERY SELECT * FROM "RoomTaskVariant" WHERE "RoomTaskVariant"."roomTaskID" = "room_task_id"
+			AND "RoomTaskVariant"."variant" = MOD(
+					(SELECT MAX("variant") FROM "RoomTaskVariant" WHERE "roomTaskID" = "room_task_id"),
+					"customer_variant"
+				);
+	END IF;
   
 END$BODY$
   LANGUAGE plpgsql VOLATILE
@@ -1181,6 +1195,20 @@ CREATE OR REPLACE FUNCTION "public"."get_room_task_variant_by_id"("id" int4)
   RETURN QUERY SELECT * FROM "RoomTaskVariant" WHERE "RoomTaskVariant"."roomTaskVariantID" = "id";
 
 	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_room_task_variants
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_task_variants"("room_task_id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_task_variants"("room_task_id" int4)
+  RETURNS SETOF "public"."RoomTaskVariant" AS $BODY$BEGIN
+
+	RETURN QUERY SELECT * FROM "RoomTaskVariant" WHERE "roomTaskID" = "room_task_id";
+	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
