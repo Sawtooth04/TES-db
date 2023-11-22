@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 20/11/2023 22:54:41
+ Date: 22/11/2023 22:13:27
 */
 
 
@@ -768,6 +768,19 @@ END$BODY$
   COST 100;
 
 -- ----------------------------
+-- Function structure for delete_room_task_variant
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."delete_room_task_variant"("room_task_ID" int4, "task_variant" int4);
+CREATE OR REPLACE FUNCTION "public"."delete_room_task_variant"("room_task_ID" int4, "task_variant" int4)
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+
+	DELETE FROM "RoomTaskVariant" WHERE "roomTaskID" = "room_task_ID" AND "variant" = "task_variant";
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
 -- Function structure for get_customer_by_id
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."get_customer_by_id"("id" int4);
@@ -1458,14 +1471,16 @@ END$BODY$
 -- ----------------------------
 -- Function structure for insert_room_task_variant
 -- ----------------------------
-DROP FUNCTION IF EXISTS "public"."insert_room_task_variant"("room_task_ID" int4, "variant" int4, "path" varchar, "description" varchar);
-CREATE OR REPLACE FUNCTION "public"."insert_room_task_variant"("room_task_ID" int4, "variant" int4, "path" varchar, "description" varchar)
+DROP FUNCTION IF EXISTS "public"."insert_room_task_variant"("room_task_ID" int4, "task_variant" int4, "task_path" varchar, "description" varchar);
+CREATE OR REPLACE FUNCTION "public"."insert_room_task_variant"("room_task_ID" int4, "task_variant" int4, "task_path" varchar, "description" varchar)
   RETURNS "pg_catalog"."void" AS $BODY$BEGIN
   
-  INSERT INTO "RoomTaskVariant" ("roomTaskID", "variant", "path", "description") 
-		VALUES ("room_task_ID", "variant", "path", "description");
+	IF NOT EXISTS (SELECT * FROM "RoomTaskVariant" WHERE "variant" = "task_variant" AND "path" = "task_path")
+	THEN
+		INSERT INTO "RoomTaskVariant" ("roomTaskID", "variant", "path", "description") 
+			VALUES ("room_task_ID", "task_variant", "task_path", "description");
+	END IF;
 
-  RETURN;
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
@@ -1702,7 +1717,7 @@ SELECT setval('"public"."RoomTaskComment_roomTaskCommentID_seq"', 33, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomTaskVariant_roomTaskVariantID_seq"
 OWNED BY "public"."RoomTaskVariant"."roomTaskVariantID";
-SELECT setval('"public"."RoomTaskVariant_roomTaskVariantID_seq"', 2, true);
+SELECT setval('"public"."RoomTaskVariant_roomTaskVariantID_seq"', 4, true);
 
 -- ----------------------------
 -- Alter sequences owned by
