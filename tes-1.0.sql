@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 22/11/2023 22:13:27
+ Date: 23/11/2023 22:02:13
 */
 
 
@@ -263,6 +263,7 @@ CREATE TABLE "public"."RoomCustomerMessage" (
 INSERT INTO "public"."RoomCustomerMessage" VALUES (14, 7, 1, '2023-11-18 22:15:10.912578', 'Dobriy den! Podskazhite gde oshibka', 't');
 INSERT INTO "public"."RoomCustomerMessage" VALUES (15, 5, 1, '2023-11-18 22:19:19.566543', 'Ya eby? Smotri gde sam nakosyachil', 't');
 INSERT INTO "public"."RoomCustomerMessage" VALUES (16, 5, 1, '2023-11-18 22:25:41.158212', 'Xarosh, krasavchik', 't');
+INSERT INTO "public"."RoomCustomerMessage" VALUES (17, 5, 15, '2023-11-23 17:37:19.493323', 'Prinyato', 't');
 
 -- ----------------------------
 -- Table structure for RoomCustomerMessageRecipient
@@ -281,6 +282,7 @@ CREATE TABLE "public"."RoomCustomerMessageRecipient" (
 INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (13, 14, 5);
 INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (14, 15, 7);
 INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (15, 16, 7);
+INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (16, 17, 7);
 
 -- ----------------------------
 -- Table structure for RoomCustomerPost
@@ -380,6 +382,7 @@ CREATE TABLE "public"."RoomSolution" (
 -- Records of RoomSolution
 -- ----------------------------
 INSERT INTO "public"."RoomSolution" VALUES (18, 'D:\TES\solutions\15\1\test\sources', 'f', 'f', 1, 7);
+INSERT INTO "public"."RoomSolution" VALUES (19, 'D:\TES\solutions\15\15\test\sources', 't', 't', 15, 7);
 
 -- ----------------------------
 -- Table structure for RoomTask
@@ -412,6 +415,7 @@ INSERT INTO "public"."RoomTask" VALUES (11, 15, 'Test 11', 'Test task', '2023-10
 INSERT INTO "public"."RoomTask" VALUES (12, 15, 'Test 12', 'Test task', '2023-10-06 13:42:45', '2023-10-12 13:43:10');
 INSERT INTO "public"."RoomTask" VALUES (13, 15, 'Test 13', 'Test task', '2023-10-07 13:42:49', '2023-10-13 13:43:14');
 INSERT INTO "public"."RoomTask" VALUES (14, 15, 'Test task from room', 'fgdhhhhhhhhhhhhhhhhhhhhhhhhhhhfdgh', '2023-10-31 23:34:00', '2023-10-28 20:34:36.680936');
+INSERT INTO "public"."RoomTask" VALUES (15, 15, 'Test taask', 'test task', '2023-11-25 20:25:00', '2023-11-23 17:26:05.424667');
 
 -- ----------------------------
 -- Table structure for RoomTaskComment
@@ -466,6 +470,7 @@ CREATE TABLE "public"."RoomTaskVariant" (
 -- Records of RoomTaskVariant
 -- ----------------------------
 INSERT INTO "public"."RoomTaskVariant" VALUES (1, 1, 1, 'D:/TES/tasks/15/1/1', 'First variant of first task.');
+INSERT INTO "public"."RoomTaskVariant" VALUES (4, 15, 1, 'D:/TES/tasks/15/15/1', 'Первый варик');
 
 -- ----------------------------
 -- Function structure for create_customer_table
@@ -827,11 +832,15 @@ END$BODY$
 -- ----------------------------
 -- Function structure for get_latest_room_tasks
 -- ----------------------------
-DROP FUNCTION IF EXISTS "public"."get_latest_room_tasks"("room_id" int4, "count" int4);
-CREATE OR REPLACE FUNCTION "public"."get_latest_room_tasks"("room_id" int4, "count" int4)
+DROP FUNCTION IF EXISTS "public"."get_latest_room_tasks"("room_id" int4, "room_customer_id" int4, "count" int4);
+CREATE OR REPLACE FUNCTION "public"."get_latest_room_tasks"("room_id" int4, "room_customer_id" int4, "count" int4)
   RETURNS SETOF "public"."RoomTask" AS $BODY$BEGIN
 
-	RETURN QUERY SELECT * FROM "RoomTask" WHERE "roomID" = "room_id" ORDER BY "added" DESC LIMIT "count";
+	RETURN QUERY SELECT * FROM "RoomTask" AS rt WHERE "roomID" = "room_id"
+		AND NOT EXISTS(SELECT * FROM "RoomSolution" AS rs WHERE rs."roomCustomerID" = "room_customer_id"
+			AND rs."roomTaskID" = rt."roomTaskID"
+			AND rs."isAccepted" = TRUE)
+		ORDER BY "added" DESC LIMIT "count";
 	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
@@ -922,7 +931,7 @@ CREATE OR REPLACE FUNCTION "public"."get_room_customer_messages"("room_task_id" 
 		LEFT JOIN "Customer" AS c ON c."customerID" = rc."customerID"
 	WHERE rcm."roomTaskID" = "room_task_id"
 	AND (rcm."roomCustomerID" = "room_customer_id" OR rcmr."roomCustomerID" = "room_customer_id")
-	ORDER BY "sent" DESC OFFSET "start" LIMIT "messages_count";
+	ORDER BY "sent" ASC OFFSET "start" LIMIT "messages_count";
 
 END$BODY$
   LANGUAGE plpgsql VOLATILE
@@ -1170,6 +1179,24 @@ END$BODY$
   ROWS 1000;
 
 -- ----------------------------
+-- Function structure for get_room_task_statistic
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_task_statistic"("room_task_id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_task_statistic"("room_task_id" int4)
+  RETURNS TABLE("totalCount" int4, "testedCount" int4, "acceptedCount" int4) AS $BODY$BEGIN
+
+	RETURN QUERY SELECT 
+		CAST(COUNT(*) AS int4),
+		CAST(COUNT(CASE WHEN "isSuccessfullyTested" = TRUE THEN TRUE ELSE NULL END) AS int4),
+		CAST(COUNT(CASE WHEN "isAccepted" = TRUE THEN TRUE ELSE NULL END) AS int4)
+		FROM "RoomSolution" WHERE "roomTaskID" = "room_task_id";
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
 -- Function structure for get_room_task_variant
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."get_room_task_variant"("room_task_id" int4, "customer_variant" int4);
@@ -1230,11 +1257,15 @@ END$BODY$
 -- ----------------------------
 -- Function structure for get_room_tasks
 -- ----------------------------
-DROP FUNCTION IF EXISTS "public"."get_room_tasks"("room_id" int4, "start" int4, "tasks_count" int4);
-CREATE OR REPLACE FUNCTION "public"."get_room_tasks"("room_id" int4, "start" int4, "tasks_count" int4)
+DROP FUNCTION IF EXISTS "public"."get_room_tasks"("room_id" int4, "room_customer_id" int4, "start" int4, "tasks_count" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_tasks"("room_id" int4, "room_customer_id" int4, "start" int4, "tasks_count" int4)
   RETURNS SETOF "public"."RoomTask" AS $BODY$BEGIN
 
-	RETURN QUERY SELECT * FROM "RoomTask" WHERE "roomID" = "room_id"
+	RETURN QUERY SELECT * FROM "RoomTask" AS rt
+		WHERE "roomID" = "room_id" AND NOT EXISTS(SELECT * FROM "RoomSolution" AS rs
+			WHERE rs."roomCustomerID" = "room_customer_id"
+				AND rs."roomTaskID" = rt."roomTaskID"
+				AND rs."isAccepted" = TRUE)
 		ORDER BY "added" DESC OFFSET "start" LIMIT "tasks_count";
 
 END$BODY$
@@ -1256,6 +1287,28 @@ CREATE OR REPLACE FUNCTION "public"."get_tasks_with_unverified_solutions"("room_
 			SELECT * FROM "RoomSolution" WHERE "roomTaskID" = rt."roomTaskID"
 				AND "isSuccessfullyTested" = TRUE
 				AND	"isAccepted" = FALSE
+		)
+		ORDER BY "added" DESC OFFSET "start" LIMIT "tasks_count";
+		
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_tasks_with_verified_solutions
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_tasks_with_verified_solutions"("room_id" int4, "start" int4, "tasks_count" int4);
+CREATE OR REPLACE FUNCTION "public"."get_tasks_with_verified_solutions"("room_id" int4, "start" int4, "tasks_count" int4)
+  RETURNS SETOF "public"."RoomTask" AS $BODY$BEGIN
+
+	RETURN QUERY SELECT rt."roomTaskID", rt."roomID", rt."name", rt."description", rt."lastTerm", rt."added"
+		FROM "RoomTask" AS rt
+		LEFT JOIN "RoomSolution" AS rs ON rs."roomTaskID" = rt."roomTaskID"
+		WHERE "roomID" = "room_id" AND EXISTS (
+			SELECT * FROM "RoomSolution" WHERE "roomTaskID" = rt."roomTaskID"
+				AND "isSuccessfullyTested" = TRUE
+				AND	"isAccepted" = TRUE
 		)
 		ORDER BY "added" DESC OFFSET "start" LIMIT "tasks_count";
 		
@@ -1296,6 +1349,23 @@ CREATE OR REPLACE FUNCTION "public"."get_variant"("customer_name" varchar, "room
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
+
+-- ----------------------------
+-- Function structure for get_verified_solutions_by_task_id
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_verified_solutions_by_task_id"("room_task_id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_verified_solutions_by_task_id"("room_task_id" int4)
+  RETURNS TABLE("roomSolutionID" int4, "customerName" varchar) AS $BODY$BEGIN
+	
+	RETURN QUERY SELECT rs."roomSolutionID", c."name" FROM "RoomSolution" AS rs
+		LEFT JOIN "RoomCustomer" AS rc ON rc."roomCustomerID" = rs."roomCustomerID"
+		LEFT JOIN "Customer" AS c ON c."customerID" = rc."customerID"
+		WHERE rs."roomTaskID" = "room_task_id" AND rs."isSuccessfullyTested" = TRUE AND rs."isAccepted" = TRUE;
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
 
 -- ----------------------------
 -- Function structure for insert_default_customer
@@ -1654,14 +1724,14 @@ SELECT setval('"public"."Role_roleID_seq"', 7, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"
 OWNED BY "public"."RoomCustomerMessageRecipient"."roomCustomerMessageRecipientID";
-SELECT setval('"public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"', 16, true);
+SELECT setval('"public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"', 17, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerMessage_roomCustomerMessageID_seq"
 OWNED BY "public"."RoomCustomerMessage"."roomCustomerMessageID";
-SELECT setval('"public"."RoomCustomerMessage_roomCustomerMessageID_seq"', 17, true);
+SELECT setval('"public"."RoomCustomerMessage_roomCustomerMessageID_seq"', 18, true);
 
 -- ----------------------------
 -- Alter sequences owned by
@@ -1703,7 +1773,7 @@ SELECT setval('"public"."RoomRole_roomRoleID_seq"', 3, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomSolution_roomSolutionID_seq"
 OWNED BY "public"."RoomSolution"."roomSolutionID";
-SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 19, true);
+SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 20, true);
 
 -- ----------------------------
 -- Alter sequences owned by
@@ -1717,14 +1787,14 @@ SELECT setval('"public"."RoomTaskComment_roomTaskCommentID_seq"', 33, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomTaskVariant_roomTaskVariantID_seq"
 OWNED BY "public"."RoomTaskVariant"."roomTaskVariantID";
-SELECT setval('"public"."RoomTaskVariant_roomTaskVariantID_seq"', 4, true);
+SELECT setval('"public"."RoomTaskVariant_roomTaskVariantID_seq"', 5, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomTask_roomTaskID_seq"
 OWNED BY "public"."RoomTask"."roomTaskID";
-SELECT setval('"public"."RoomTask_roomTaskID_seq"', 15, true);
+SELECT setval('"public"."RoomTask_roomTaskID_seq"', 16, true);
 
 -- ----------------------------
 -- Alter sequences owned by
