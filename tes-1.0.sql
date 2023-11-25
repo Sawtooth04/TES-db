@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 23/11/2023 22:02:13
+ Date: 25/11/2023 22:43:52
 */
 
 
@@ -345,8 +345,8 @@ CREATE TABLE "public"."RoomCustomerRole" (
 -- Records of RoomCustomerRole
 -- ----------------------------
 INSERT INTO "public"."RoomCustomerRole" VALUES (1, 5, 2);
-INSERT INTO "public"."RoomCustomerRole" VALUES (2, 6, 1);
 INSERT INTO "public"."RoomCustomerRole" VALUES (3, 7, 1);
+INSERT INTO "public"."RoomCustomerRole" VALUES (2, 6, 2);
 
 -- ----------------------------
 -- Table structure for RoomRole
@@ -382,7 +382,7 @@ CREATE TABLE "public"."RoomSolution" (
 -- Records of RoomSolution
 -- ----------------------------
 INSERT INTO "public"."RoomSolution" VALUES (18, 'D:\TES\solutions\15\1\test\sources', 'f', 'f', 1, 7);
-INSERT INTO "public"."RoomSolution" VALUES (19, 'D:\TES\solutions\15\15\test\sources', 't', 't', 15, 7);
+INSERT INTO "public"."RoomSolution" VALUES (19, 'D:\TES\solutions\15\15\test\sources', 't', 'f', 15, 7);
 
 -- ----------------------------
 -- Table structure for RoomTask
@@ -1655,6 +1655,22 @@ END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
   ROWS 1000;
+
+-- ----------------------------
+-- Function structure for set_room_customer_role
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."set_room_customer_role"("room_customer_id" int4, "role_name" varchar);
+CREATE OR REPLACE FUNCTION "public"."set_room_customer_role"("room_customer_id" int4, "role_name" varchar)
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	UPDATE "RoomCustomerRole" 
+		SET "roomRoleID" = (SELECT "roomRoleID" FROM "RoomRole" WHERE "name" = "role_name")
+		WHERE "roomCustomerID" = "room_customer_id";
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
 
 -- ----------------------------
 -- Function structure for set_room_solution_accepted
