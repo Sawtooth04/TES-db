@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 25/11/2023 22:43:52
+ Date: 26/11/2023 21:31:25
 */
 
 
@@ -222,7 +222,7 @@ CREATE TABLE "public"."Room" (
 -- ----------------------------
 -- Records of Room
 -- ----------------------------
-INSERT INTO "public"."Room" VALUES (15, 'Test Room', 6, 'Test room description. Hello world!');
+INSERT INTO "public"."Room" VALUES (15, 'Test Room 1', 6, 'Test room description. Hello world!');
 
 -- ----------------------------
 -- Table structure for RoomCustomer
@@ -1717,6 +1717,20 @@ CREATE OR REPLACE FUNCTION "public"."set_solution_successfully_tested"("room_tas
 		);
 
 	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
+-- Function structure for update_room
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."update_room"("room_id" int4, "room_name" varchar, "room_description" varchar);
+CREATE OR REPLACE FUNCTION "public"."update_room"("room_id" int4, "room_name" varchar, "room_description" varchar)
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	UPDATE "Room" SET "name" = "room_name", "description" = "room_description"
+		WHERE "roomID" = "room_id";
+	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
