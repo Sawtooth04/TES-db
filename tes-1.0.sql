@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 26/11/2023 21:31:25
+ Date: 29/11/2023 00:03:42
 */
 
 
@@ -215,14 +215,16 @@ CREATE TABLE "public"."Room" (
   "roomID" int4 NOT NULL DEFAULT nextval('"Room_roomID_seq"'::regclass),
   "name" varchar(30) COLLATE "pg_catalog"."default" NOT NULL,
   "ownerID" int4 NOT NULL,
-  "description" varchar(255) COLLATE "pg_catalog"."default"
+  "description" varchar(255) COLLATE "pg_catalog"."default",
+  "color" int4,
+  "backgroundPath" varchar(200) COLLATE "pg_catalog"."default"
 )
 ;
 
 -- ----------------------------
 -- Records of Room
 -- ----------------------------
-INSERT INTO "public"."Room" VALUES (15, 'Test Room 1', 6, 'Test room description. Hello world!');
+INSERT INTO "public"."Room" VALUES (15, 'Test Room 1', 6, 'Test room description. Hello world!', -12373983, 'D:\TES\backgrounds/15.jpg');
 
 -- ----------------------------
 -- Table structure for RoomCustomer
@@ -241,7 +243,7 @@ CREATE TABLE "public"."RoomCustomer" (
 -- ----------------------------
 INSERT INTO "public"."RoomCustomer" VALUES (5, 15, 6, 1);
 INSERT INTO "public"."RoomCustomer" VALUES (6, 15, 8, 2);
-INSERT INTO "public"."RoomCustomer" VALUES (7, 15, 10, 1);
+INSERT INTO "public"."RoomCustomer" VALUES (9, 15, 10, 8);
 
 -- ----------------------------
 -- Table structure for RoomCustomerMessage
@@ -260,7 +262,6 @@ CREATE TABLE "public"."RoomCustomerMessage" (
 -- ----------------------------
 -- Records of RoomCustomerMessage
 -- ----------------------------
-INSERT INTO "public"."RoomCustomerMessage" VALUES (14, 7, 1, '2023-11-18 22:15:10.912578', 'Dobriy den! Podskazhite gde oshibka', 't');
 INSERT INTO "public"."RoomCustomerMessage" VALUES (15, 5, 1, '2023-11-18 22:19:19.566543', 'Ya eby? Smotri gde sam nakosyachil', 't');
 INSERT INTO "public"."RoomCustomerMessage" VALUES (16, 5, 1, '2023-11-18 22:25:41.158212', 'Xarosh, krasavchik', 't');
 INSERT INTO "public"."RoomCustomerMessage" VALUES (17, 5, 15, '2023-11-23 17:37:19.493323', 'Prinyato', 't');
@@ -279,10 +280,6 @@ CREATE TABLE "public"."RoomCustomerMessageRecipient" (
 -- ----------------------------
 -- Records of RoomCustomerMessageRecipient
 -- ----------------------------
-INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (13, 14, 5);
-INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (14, 15, 7);
-INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (15, 16, 7);
-INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (16, 17, 7);
 
 -- ----------------------------
 -- Table structure for RoomCustomerPost
@@ -345,7 +342,6 @@ CREATE TABLE "public"."RoomCustomerRole" (
 -- Records of RoomCustomerRole
 -- ----------------------------
 INSERT INTO "public"."RoomCustomerRole" VALUES (1, 5, 2);
-INSERT INTO "public"."RoomCustomerRole" VALUES (3, 7, 1);
 INSERT INTO "public"."RoomCustomerRole" VALUES (2, 6, 2);
 
 -- ----------------------------
@@ -381,8 +377,6 @@ CREATE TABLE "public"."RoomSolution" (
 -- ----------------------------
 -- Records of RoomSolution
 -- ----------------------------
-INSERT INTO "public"."RoomSolution" VALUES (18, 'D:\TES\solutions\15\1\test\sources', 'f', 'f', 1, 7);
-INSERT INTO "public"."RoomSolution" VALUES (19, 'D:\TES\solutions\15\15\test\sources', 't', 'f', 15, 7);
 
 -- ----------------------------
 -- Table structure for RoomTask
@@ -677,6 +671,8 @@ CREATE OR REPLACE FUNCTION "public"."create_room_table"()
 		name varchar(30),
 		"ownerID" int4,
 		"description" varchar(255),
+		"color" int4 DEFAULT 81133197,
+		"backgroundPath" varchar(200),
 		
 		CONSTRAINT room_name_owner_uniq UNIQUE(name, "ownerID"),
 		FOREIGN KEY ("ownerID") REFERENCES "Customer" ("customerID") ON UPDATE CASCADE ON DELETE CASCADE
@@ -820,7 +816,7 @@ DROP FUNCTION IF EXISTS "public"."get_customer_rooms"("id" int4);
 CREATE OR REPLACE FUNCTION "public"."get_customer_rooms"("id" int4)
   RETURNS SETOF "public"."Room" AS $BODY$BEGIN
   
-  RETURN QUERY SELECT "Room"."roomID", "Room"."name", "Room"."ownerID", "Room"."description" FROM "Room"
+  RETURN QUERY SELECT "Room"."roomID", "Room"."name", "Room"."ownerID", "Room"."description", "Room"."color", "Room"."backgroundPath" FROM "Room"
     LEFT JOIN "RoomCustomer" AS rc ON "Room"."roomID" = rc."roomID"
     WHERE rc."customerID" = "id";
   
@@ -862,6 +858,19 @@ END$BODY$
   ROWS 1000;
 
 -- ----------------------------
+-- Function structure for get_room_background_path
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_background_path"("room_id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_background_path"("room_id" int4)
+  RETURNS "pg_catalog"."varchar" AS $BODY$BEGIN
+
+	RETURN (SELECT "backgroundPath" FROM "Room" WHERE "roomID" = "room_id");
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
 -- Function structure for get_room_by_id
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."get_room_by_id"("id" int4);
@@ -874,6 +883,19 @@ END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
   ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_room_color
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_room_color"("room_id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_room_color"("room_id" int4)
+  RETURNS "pg_catalog"."int4" AS $BODY$BEGIN
+
+	RETURN (SELECT "color" FROM "Room" WHERE "roomID" = "room_id");
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
 
 -- ----------------------------
 -- Function structure for get_room_customer
@@ -1657,6 +1679,32 @@ END$BODY$
   ROWS 1000;
 
 -- ----------------------------
+-- Function structure for set_room_background_path
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."set_room_background_path"("room_id" int4, "background_path" varchar);
+CREATE OR REPLACE FUNCTION "public"."set_room_background_path"("room_id" int4, "background_path" varchar)
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	UPDATE "Room" SET "backgroundPath" = "background_path" WHERE "roomID" = "room_id";
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
+-- Function structure for set_room_color
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."set_room_color"("room_id" int4, "room_color" int4);
+CREATE OR REPLACE FUNCTION "public"."set_room_color"("room_id" int4, "room_color" int4)
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	UPDATE "Room" SET "color" = "room_color" WHERE "roomID" = "room_id";
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
 -- Function structure for set_room_customer_role
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."set_room_customer_role"("room_customer_id" int4, "role_name" varchar);
@@ -1782,14 +1830,14 @@ SELECT setval('"public"."RoomCustomerRole_roomCustomerRoleID_seq"', 4, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomer_roomCustomerID_seq"
 OWNED BY "public"."RoomCustomer"."roomCustomerID";
-SELECT setval('"public"."RoomCustomer_roomCustomerID_seq"', 8, true);
+SELECT setval('"public"."RoomCustomer_roomCustomerID_seq"', 10, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomer_variant_seq"
 OWNED BY "public"."RoomCustomer"."variant";
-SELECT setval('"public"."RoomCustomer_variant_seq"', 7, true);
+SELECT setval('"public"."RoomCustomer_variant_seq"', 9, true);
 
 -- ----------------------------
 -- Alter sequences owned by
