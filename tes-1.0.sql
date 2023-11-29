@@ -12,9 +12,20 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 29/11/2023 12:04:28
+ Date: 29/11/2023 23:22:45
 */
 
+
+-- ----------------------------
+-- Sequence structure for CustomerNotification_сustomerNotificationID_seq
+-- ----------------------------
+DROP SEQUENCE IF EXISTS "public"."CustomerNotification_сustomerNotificationID_seq";
+CREATE SEQUENCE "public"."CustomerNotification_сustomerNotificationID_seq" 
+INCREMENT 1
+MINVALUE  1
+MAXVALUE 2147483647
+START 1
+CACHE 1;
 
 -- ----------------------------
 -- Sequence structure for Customer_customerID_seq
@@ -190,6 +201,26 @@ INSERT INTO "public"."Customer" VALUES (6, 'zalupa', '$2a$10$bft2fzlgly/2ekNn5kz
 INSERT INTO "public"."Customer" VALUES (8, 'Sawtooth', '$2a$10$.6QS9ezRz6WSo5NMZkhoyetJVDyBASPXMkQXNDJ.1ZH4DpDp2gq/G', 'andrey.y96@mail.ru', 4);
 INSERT INTO "public"."Customer" VALUES (9, 'gfhj', '$2a$10$9Ku2MzpDcy2FrSioImUDte3m4ZbNa7.5Qgt9KItZt1Ja7GR0z.jrG', 'ghhj', 4);
 INSERT INTO "public"."Customer" VALUES (10, 'test', '$2a$10$UA3fLsr29i3JyNh4ztm/B.JkNXW2zcgtFgbZx2IA7uZ4fDoZSl9Xq', 'aaaaa', 4);
+
+-- ----------------------------
+-- Table structure for CustomerNotification
+-- ----------------------------
+DROP TABLE IF EXISTS "public"."CustomerNotification";
+CREATE TABLE "public"."CustomerNotification" (
+  "сustomerNotificationID" int4 NOT NULL DEFAULT nextval('"CustomerNotification_сustomerNotificationID_seq"'::regclass),
+  "сustomerID" int4,
+  "header" varchar(100) COLLATE "pg_catalog"."default",
+  "text" varchar(300) COLLATE "pg_catalog"."default",
+  "isRead" bool DEFAULT false
+)
+;
+
+-- ----------------------------
+-- Records of CustomerNotification
+-- ----------------------------
+INSERT INTO "public"."CustomerNotification" VALUES (1, 6, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 'f');
+INSERT INTO "public"."CustomerNotification" VALUES (2, 8, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 'f');
+INSERT INTO "public"."CustomerNotification" VALUES (3, 10, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 'f');
 
 -- ----------------------------
 -- Table structure for Role
@@ -410,6 +441,9 @@ INSERT INTO "public"."RoomTask" VALUES (12, 15, 'Test 12', 'Test task', '2023-10
 INSERT INTO "public"."RoomTask" VALUES (13, 15, 'Test 13', 'Test task', '2023-10-07 13:42:49', '2023-10-13 13:43:14');
 INSERT INTO "public"."RoomTask" VALUES (14, 15, 'Test task from room', 'fgdhhhhhhhhhhhhhhhhhhhhhhhhhhhfdgh', '2023-10-31 23:34:00', '2023-10-28 20:34:36.680936');
 INSERT INTO "public"."RoomTask" VALUES (15, 15, 'Test taask', 'test task', '2023-11-25 20:25:00', '2023-11-23 17:26:05.424667');
+INSERT INTO "public"."RoomTask" VALUES (16, 15, 'hjjhgjghjy', 'hgjghjgh', '2023-11-17 01:38:00', '2023-11-29 22:38:56.712157');
+INSERT INTO "public"."RoomTask" VALUES (17, 15, 'Test taaaaaaaaaaask', 'm', '2023-11-25 01:40:00', '2023-11-29 22:40:11.15426');
+INSERT INTO "public"."RoomTask" VALUES (18, 15, 'gfhgfghgfhfgh', 'fghgfhhfgfghfgh', '2023-12-10 01:47:00', '2023-11-29 22:47:47.834417');
 
 -- ----------------------------
 -- Table structure for RoomTaskComment
@@ -465,6 +499,27 @@ CREATE TABLE "public"."RoomTaskVariant" (
 -- ----------------------------
 INSERT INTO "public"."RoomTaskVariant" VALUES (1, 1, 1, 'D:/TES/tasks/15/1/1', 'First variant of first task.');
 INSERT INTO "public"."RoomTaskVariant" VALUES (4, 15, 1, 'D:/TES/tasks/15/15/1', 'Первый варик');
+
+-- ----------------------------
+-- Function structure for create_customer_notification_table
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."create_customer_notification_table"();
+CREATE OR REPLACE FUNCTION "public"."create_customer_notification_table"()
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	CREATE TABLE "CustomerNotification" (
+		"сustomerNotificationID" serial PRIMARY KEY,
+		"сustomerID" int4,
+		"header" varchar(100),
+		"text" varchar(300),
+		"isRead" bool DEFAULT FALSE, 
+		
+		FOREIGN KEY ("сustomerID") REFERENCES "Customer" ("customerID") ON UPDATE CASCADE ON DELETE CASCADE);
+
+	RETURN;
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
 
 -- ----------------------------
 -- Function structure for create_customer_table
@@ -803,6 +858,24 @@ CREATE OR REPLACE FUNCTION "public"."get_customer_by_name"("customer_name" varch
   RETURNS SETOF "public"."Customer" AS $BODY$BEGIN
 
 	RETURN QUERY SELECT * FROM "Customer" WHERE "Customer"."name" = "customer_name";
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_customer_notifications
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_customer_notifications"("customer_id" int4, "start" int4, "count" int4);
+CREATE OR REPLACE FUNCTION "public"."get_customer_notifications"("customer_id" int4, "start" int4, "count" int4)
+  RETURNS TABLE("customerNotificationID" int4, "header" varchar, "text" varchar) AS $BODY$BEGIN
+	
+	RETURN QUERY SELECT cn."сustomerNotificationID", cn."header", cn."text"
+		FROM "CustomerNotification" AS cn
+		LEFT JOIN "Customer" AS c ON c."customerID" = "customer_id"
+		WHERE c."customerID" = "customer_id"
+		OFFSET "start" LIMIT "count";
 	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
@@ -1420,6 +1493,41 @@ END$BODY$
   ROWS 1000;
 
 -- ----------------------------
+-- Function structure for insert_customer_notification
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."insert_customer_notification"("customer_id" int4, "notification_header" varchar, "notification_text" varchar);
+CREATE OR REPLACE FUNCTION "public"."insert_customer_notification"("customer_id" int4, "notification_header" varchar, "notification_text" varchar)
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	INSERT INTO "CustomerNotification" ("customerID", "header", "text")
+		VALUES ("customer_id", "notification_header", "notification_text");
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
+-- Function structure for insert_customers_notification
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."insert_customers_notification"("room_id" int4, "notification_header" varchar, "notification_text" varchar);
+CREATE OR REPLACE FUNCTION "public"."insert_customers_notification"("room_id" int4, "notification_header" varchar, "notification_text" varchar)
+  RETURNS "pg_catalog"."void" AS $BODY$
+	DECLARE
+	r record;
+	BEGIN
+	
+	FOR r IN 
+		SELECT * FROM "RoomCustomer" WHERE "roomID" = "room_id"
+	LOOP
+		INSERT INTO "CustomerNotification" ("сustomerID", "header", "text")
+			VALUES (r."customerID", "notification_header", "notification_text");
+	END LOOP;
+
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
 -- Function structure for insert_default_customer
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."insert_default_customer"("name" varchar, "password" varchar, "email" varchar);
@@ -1816,105 +1924,117 @@ END$BODY$
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
+ALTER SEQUENCE "public"."CustomerNotification_сustomerNotificationID_seq"
+OWNED BY "public"."CustomerNotification"."сustomerNotificationID";
+SELECT setval('"public"."CustomerNotification_сustomerNotificationID_seq"', 5, true);
+
+-- ----------------------------
+-- Alter sequences owned by
+-- ----------------------------
 ALTER SEQUENCE "public"."Customer_customerID_seq"
 OWNED BY "public"."Customer"."customerID";
-SELECT setval('"public"."Customer_customerID_seq"', 11, true);
+SELECT setval('"public"."Customer_customerID_seq"', 12, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."Role_roleID_seq"
 OWNED BY "public"."Role"."roleID";
-SELECT setval('"public"."Role_roleID_seq"', 7, true);
+SELECT setval('"public"."Role_roleID_seq"', 8, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"
 OWNED BY "public"."RoomCustomerMessageRecipient"."roomCustomerMessageRecipientID";
-SELECT setval('"public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"', 17, true);
+SELECT setval('"public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"', 18, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerMessage_roomCustomerMessageID_seq"
 OWNED BY "public"."RoomCustomerMessage"."roomCustomerMessageID";
-SELECT setval('"public"."RoomCustomerMessage_roomCustomerMessageID_seq"', 18, true);
+SELECT setval('"public"."RoomCustomerMessage_roomCustomerMessageID_seq"', 19, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerPost_roomPostID_seq"
 OWNED BY "public"."RoomCustomerPost"."roomCustomerPostID";
-SELECT setval('"public"."RoomCustomerPost_roomPostID_seq"', 31, true);
+SELECT setval('"public"."RoomCustomerPost_roomPostID_seq"', 32, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerRole_roomCustomerRoleID_seq"
 OWNED BY "public"."RoomCustomerRole"."roomCustomerRoleID";
-SELECT setval('"public"."RoomCustomerRole_roomCustomerRoleID_seq"', 4, true);
+SELECT setval('"public"."RoomCustomerRole_roomCustomerRoleID_seq"', 5, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomer_roomCustomerID_seq"
 OWNED BY "public"."RoomCustomer"."roomCustomerID";
-SELECT setval('"public"."RoomCustomer_roomCustomerID_seq"', 10, true);
+SELECT setval('"public"."RoomCustomer_roomCustomerID_seq"', 11, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomer_variant_seq"
 OWNED BY "public"."RoomCustomer"."variant";
-SELECT setval('"public"."RoomCustomer_variant_seq"', 9, true);
+SELECT setval('"public"."RoomCustomer_variant_seq"', 10, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomRole_roomRoleID_seq"
 OWNED BY "public"."RoomRole"."roomRoleID";
-SELECT setval('"public"."RoomRole_roomRoleID_seq"', 3, true);
+SELECT setval('"public"."RoomRole_roomRoleID_seq"', 4, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomSolution_roomSolutionID_seq"
 OWNED BY "public"."RoomSolution"."roomSolutionID";
-SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 20, true);
+SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 21, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomTaskComment_roomTaskCommentID_seq"
 OWNED BY "public"."RoomTaskComment"."roomTaskCommentID";
-SELECT setval('"public"."RoomTaskComment_roomTaskCommentID_seq"', 33, true);
+SELECT setval('"public"."RoomTaskComment_roomTaskCommentID_seq"', 34, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomTaskVariant_roomTaskVariantID_seq"
 OWNED BY "public"."RoomTaskVariant"."roomTaskVariantID";
-SELECT setval('"public"."RoomTaskVariant_roomTaskVariantID_seq"', 5, true);
+SELECT setval('"public"."RoomTaskVariant_roomTaskVariantID_seq"', 6, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomTask_roomTaskID_seq"
 OWNED BY "public"."RoomTask"."roomTaskID";
-SELECT setval('"public"."RoomTask_roomTaskID_seq"', 16, true);
+SELECT setval('"public"."RoomTask_roomTaskID_seq"', 20, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."Room_roomID_seq"
 OWNED BY "public"."Room"."roomID";
-SELECT setval('"public"."Room_roomID_seq"', 16, true);
+SELECT setval('"public"."Room_roomID_seq"', 17, true);
 
 -- ----------------------------
 -- Primary Key structure for table Customer
 -- ----------------------------
 ALTER TABLE "public"."Customer" ADD CONSTRAINT "Customer_pkey" PRIMARY KEY ("customerID");
+
+-- ----------------------------
+-- Primary Key structure for table CustomerNotification
+-- ----------------------------
+ALTER TABLE "public"."CustomerNotification" ADD CONSTRAINT "CustomerNotification_pkey" PRIMARY KEY ("сustomerNotificationID");
 
 -- ----------------------------
 -- Primary Key structure for table Role
@@ -1996,6 +2116,11 @@ ALTER TABLE "public"."RoomTaskVariant" ADD CONSTRAINT "RoomTaskVariant_pkey" PRI
 -- Foreign Keys structure for table Customer
 -- ----------------------------
 ALTER TABLE "public"."Customer" ADD CONSTRAINT "Customer_roleID_fkey" FOREIGN KEY ("roleID") REFERENCES "public"."Role" ("roleID") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- ----------------------------
+-- Foreign Keys structure for table CustomerNotification
+-- ----------------------------
+ALTER TABLE "public"."CustomerNotification" ADD CONSTRAINT "CustomerNotification_сustomerID_fkey" FOREIGN KEY ("сustomerID") REFERENCES "public"."Customer" ("customerID") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- ----------------------------
 -- Foreign Keys structure for table Room
