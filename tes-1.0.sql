@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 29/11/2023 00:03:42
+ Date: 29/11/2023 12:04:28
 */
 
 
@@ -224,7 +224,7 @@ CREATE TABLE "public"."Room" (
 -- ----------------------------
 -- Records of Room
 -- ----------------------------
-INSERT INTO "public"."Room" VALUES (15, 'Test Room 1', 6, 'Test room description. Hello world!', -12373983, 'D:\TES\backgrounds/15.jpg');
+INSERT INTO "public"."Room" VALUES (15, 'Test Room 1', 6, 'Test room description. Hello world!', -14211289, 'D:\TES\backgrounds/15.jpg');
 
 -- ----------------------------
 -- Table structure for RoomCustomer
@@ -810,6 +810,20 @@ END$BODY$
   ROWS 1000;
 
 -- ----------------------------
+-- Function structure for get_customer_own_rooms
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_customer_own_rooms"("owner_id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_customer_own_rooms"("owner_id" int4)
+  RETURNS SETOF "public"."Room" AS $BODY$BEGIN
+	
+	RETURN QUERY SELECT * FROM "Room" WHERE "ownerID" = "owner_id";
+		
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
 -- Function structure for get_customer_rooms
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."get_customer_rooms"("id" int4);
@@ -820,6 +834,22 @@ CREATE OR REPLACE FUNCTION "public"."get_customer_rooms"("id" int4)
     LEFT JOIN "RoomCustomer" AS rc ON "Room"."roomID" = rc."roomID"
     WHERE rc."customerID" = "id";
   
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+
+-- ----------------------------
+-- Function structure for get_customer_studying_rooms
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."get_customer_studying_rooms"("customer_id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_customer_studying_rooms"("customer_id" int4)
+  RETURNS SETOF "public"."Room" AS $BODY$BEGIN
+  
+  RETURN QUERY SELECT "Room"."roomID", "Room"."name", "Room"."ownerID", "Room"."description", "Room"."color", "Room"."backgroundPath" FROM "Room"
+    LEFT JOIN "RoomCustomer" AS rc ON "Room"."roomID" = rc."roomID"
+    WHERE rc."customerID" = "id" AND "ownerID" != "customer_id";
+		
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100
