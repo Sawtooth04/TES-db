@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 29/11/2023 23:22:45
+ Date: 30/11/2023 21:39:48
 */
 
 
@@ -208,7 +208,7 @@ INSERT INTO "public"."Customer" VALUES (10, 'test', '$2a$10$UA3fLsr29i3JyNh4ztm/
 DROP TABLE IF EXISTS "public"."CustomerNotification";
 CREATE TABLE "public"."CustomerNotification" (
   "сustomerNotificationID" int4 NOT NULL DEFAULT nextval('"CustomerNotification_сustomerNotificationID_seq"'::regclass),
-  "сustomerID" int4,
+  "customerID" int4,
   "header" varchar(100) COLLATE "pg_catalog"."default",
   "text" varchar(300) COLLATE "pg_catalog"."default",
   "isRead" bool DEFAULT false
@@ -218,9 +218,10 @@ CREATE TABLE "public"."CustomerNotification" (
 -- ----------------------------
 -- Records of CustomerNotification
 -- ----------------------------
-INSERT INTO "public"."CustomerNotification" VALUES (1, 6, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 'f');
-INSERT INTO "public"."CustomerNotification" VALUES (2, 8, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 'f');
 INSERT INTO "public"."CustomerNotification" VALUES (3, 10, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 'f');
+INSERT INTO "public"."CustomerNotification" VALUES (2, 8, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 't');
+INSERT INTO "public"."CustomerNotification" VALUES (5, 6, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 't');
+INSERT INTO "public"."CustomerNotification" VALUES (1, 6, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 't');
 
 -- ----------------------------
 -- Table structure for Role
@@ -873,8 +874,7 @@ CREATE OR REPLACE FUNCTION "public"."get_customer_notifications"("customer_id" i
 	
 	RETURN QUERY SELECT cn."сustomerNotificationID", cn."header", cn."text"
 		FROM "CustomerNotification" AS cn
-		LEFT JOIN "Customer" AS c ON c."customerID" = "customer_id"
-		WHERE c."customerID" = "customer_id"
+		WHERE cn."customerID" = "customer_id" AND "isRead" = FALSE
 		OFFSET "start" LIMIT "count";
 	
 END$BODY$
@@ -1817,6 +1817,19 @@ END$BODY$
   ROWS 1000;
 
 -- ----------------------------
+-- Function structure for set_customer_notification_readed
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."set_customer_notification_readed"("customer_notification_id" int4);
+CREATE OR REPLACE FUNCTION "public"."set_customer_notification_readed"("customer_notification_id" int4)
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	UPDATE "CustomerNotification" SET "isRead" = TRUE WHERE "сustomerNotificationID" = "customer_notification_id";
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
 -- Function structure for set_room_background_path
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."set_room_background_path"("room_id" int4, "background_path" varchar);
@@ -1926,7 +1939,7 @@ END$BODY$
 -- ----------------------------
 ALTER SEQUENCE "public"."CustomerNotification_сustomerNotificationID_seq"
 OWNED BY "public"."CustomerNotification"."сustomerNotificationID";
-SELECT setval('"public"."CustomerNotification_сustomerNotificationID_seq"', 5, true);
+SELECT setval('"public"."CustomerNotification_сustomerNotificationID_seq"', 6, true);
 
 -- ----------------------------
 -- Alter sequences owned by
@@ -2120,7 +2133,7 @@ ALTER TABLE "public"."Customer" ADD CONSTRAINT "Customer_roleID_fkey" FOREIGN KE
 -- ----------------------------
 -- Foreign Keys structure for table CustomerNotification
 -- ----------------------------
-ALTER TABLE "public"."CustomerNotification" ADD CONSTRAINT "CustomerNotification_сustomerID_fkey" FOREIGN KEY ("сustomerID") REFERENCES "public"."Customer" ("customerID") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."CustomerNotification" ADD CONSTRAINT "CustomerNotification_сustomerID_fkey" FOREIGN KEY ("customerID") REFERENCES "public"."Customer" ("customerID") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- ----------------------------
 -- Foreign Keys structure for table Room
