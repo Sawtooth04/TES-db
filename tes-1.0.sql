@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 30/11/2023 21:39:48
+ Date: 01/12/2023 22:14:01
 */
 
 
@@ -218,10 +218,11 @@ CREATE TABLE "public"."CustomerNotification" (
 -- ----------------------------
 -- Records of CustomerNotification
 -- ----------------------------
-INSERT INTO "public"."CustomerNotification" VALUES (3, 10, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 'f');
 INSERT INTO "public"."CustomerNotification" VALUES (2, 8, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 't');
 INSERT INTO "public"."CustomerNotification" VALUES (5, 6, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 't');
 INSERT INTO "public"."CustomerNotification" VALUES (1, 6, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 't');
+INSERT INTO "public"."CustomerNotification" VALUES (3, 10, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 't');
+INSERT INTO "public"."CustomerNotification" VALUES (6, 9, 'Test Room 1', 'Ваше решение для задания Test 1 было принято', 'f');
 
 -- ----------------------------
 -- Table structure for Role
@@ -375,6 +376,7 @@ CREATE TABLE "public"."RoomCustomerRole" (
 -- ----------------------------
 INSERT INTO "public"."RoomCustomerRole" VALUES (1, 5, 2);
 INSERT INTO "public"."RoomCustomerRole" VALUES (2, 6, 2);
+INSERT INTO "public"."RoomCustomerRole" VALUES (5, 9, 1);
 
 -- ----------------------------
 -- Table structure for RoomRole
@@ -409,6 +411,7 @@ CREATE TABLE "public"."RoomSolution" (
 -- ----------------------------
 -- Records of RoomSolution
 -- ----------------------------
+INSERT INTO "public"."RoomSolution" VALUES (21, 'D:\TES\solutions\15\1\test\sources', 't', 't', 1, 9);
 
 -- ----------------------------
 -- Table structure for RoomTask
@@ -868,14 +871,13 @@ END$BODY$
 -- ----------------------------
 -- Function structure for get_customer_notifications
 -- ----------------------------
-DROP FUNCTION IF EXISTS "public"."get_customer_notifications"("customer_id" int4, "start" int4, "count" int4);
-CREATE OR REPLACE FUNCTION "public"."get_customer_notifications"("customer_id" int4, "start" int4, "count" int4)
+DROP FUNCTION IF EXISTS "public"."get_customer_notifications"("customer_id" int4);
+CREATE OR REPLACE FUNCTION "public"."get_customer_notifications"("customer_id" int4)
   RETURNS TABLE("customerNotificationID" int4, "header" varchar, "text" varchar) AS $BODY$BEGIN
 	
 	RETURN QUERY SELECT cn."сustomerNotificationID", cn."header", cn."text"
 		FROM "CustomerNotification" AS cn
-		WHERE cn."customerID" = "customer_id" AND "isRead" = FALSE
-		OFFSET "start" LIMIT "count";
+		WHERE cn."customerID" = "customer_id" AND "isRead" = FALSE;
 	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
@@ -1939,7 +1941,7 @@ END$BODY$
 -- ----------------------------
 ALTER SEQUENCE "public"."CustomerNotification_сustomerNotificationID_seq"
 OWNED BY "public"."CustomerNotification"."сustomerNotificationID";
-SELECT setval('"public"."CustomerNotification_сustomerNotificationID_seq"', 6, true);
+SELECT setval('"public"."CustomerNotification_сustomerNotificationID_seq"', 7, true);
 
 -- ----------------------------
 -- Alter sequences owned by
@@ -1981,7 +1983,7 @@ SELECT setval('"public"."RoomCustomerPost_roomPostID_seq"', 32, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerRole_roomCustomerRoleID_seq"
 OWNED BY "public"."RoomCustomerRole"."roomCustomerRoleID";
-SELECT setval('"public"."RoomCustomerRole_roomCustomerRoleID_seq"', 5, true);
+SELECT setval('"public"."RoomCustomerRole_roomCustomerRoleID_seq"', 6, true);
 
 -- ----------------------------
 -- Alter sequences owned by
@@ -2009,7 +2011,7 @@ SELECT setval('"public"."RoomRole_roomRoleID_seq"', 4, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomSolution_roomSolutionID_seq"
 OWNED BY "public"."RoomSolution"."roomSolutionID";
-SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 21, true);
+SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 22, true);
 
 -- ----------------------------
 -- Alter sequences owned by
