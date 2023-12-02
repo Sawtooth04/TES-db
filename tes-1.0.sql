@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 01/12/2023 22:14:01
+ Date: 02/12/2023 23:36:48
 */
 
 
@@ -1740,6 +1740,19 @@ END$BODY$
   COST 100;
 
 -- ----------------------------
+-- Function structure for is_customer_email_free
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."is_customer_email_free"("customer_email" varchar);
+CREATE OR REPLACE FUNCTION "public"."is_customer_email_free"("customer_email" varchar)
+  RETURNS "pg_catalog"."bool" AS $BODY$BEGIN
+	
+	RETURN NOT EXISTS (SELECT * FROM "Customer" WHERE "email" = "customer_email");
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
 -- Function structure for is_customer_has_role
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."is_customer_has_role"("role_id" int4, "customer_id" int4, "room_id" int4);
@@ -1762,6 +1775,19 @@ CREATE OR REPLACE FUNCTION "public"."is_customer_in_room"("customer_id" int4, "r
   RETURNS "pg_catalog"."bool" AS $BODY$BEGIN
 
 	RETURN (EXISTS(SELECT * FROM "RoomCustomer" WHERE "customerID" = "customer_id" AND "roomID" = "room_id"));
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
+-- Function structure for is_customer_name_free
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."is_customer_name_free"("customer_name" varchar);
+CREATE OR REPLACE FUNCTION "public"."is_customer_name_free"("customer_name" varchar)
+  RETURNS "pg_catalog"."bool" AS $BODY$BEGIN
+	
+	RETURN NOT EXISTS (SELECT * FROM "Customer" WHERE "name" = "customer_name");
 	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
@@ -1948,7 +1974,7 @@ SELECT setval('"public"."CustomerNotification_сustomerNotificationID_seq"', 7, 
 -- ----------------------------
 ALTER SEQUENCE "public"."Customer_customerID_seq"
 OWNED BY "public"."Customer"."customerID";
-SELECT setval('"public"."Customer_customerID_seq"', 12, true);
+SELECT setval('"public"."Customer_customerID_seq"', 13, true);
 
 -- ----------------------------
 -- Alter sequences owned by
