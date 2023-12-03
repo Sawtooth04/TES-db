@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 02/12/2023 23:36:48
+ Date: 03/12/2023 21:14:25
 */
 
 
@@ -190,17 +190,18 @@ CREATE TABLE "public"."Customer" (
   "name" varchar(30) COLLATE "pg_catalog"."default",
   "passwordHash" varchar(255) COLLATE "pg_catalog"."default",
   "email" varchar(50) COLLATE "pg_catalog"."default",
-  "roleID" int4
+  "roleID" int4,
+  "verified" bool
 )
 ;
 
 -- ----------------------------
 -- Records of Customer
 -- ----------------------------
-INSERT INTO "public"."Customer" VALUES (6, 'zalupa', '$2a$10$bft2fzlgly/2ekNn5kz8Q.4YWFHDYdpXUi6hx/0n31G554JhiivAW', 'idinaxui', 4);
-INSERT INTO "public"."Customer" VALUES (8, 'Sawtooth', '$2a$10$.6QS9ezRz6WSo5NMZkhoyetJVDyBASPXMkQXNDJ.1ZH4DpDp2gq/G', 'andrey.y96@mail.ru', 4);
-INSERT INTO "public"."Customer" VALUES (9, 'gfhj', '$2a$10$9Ku2MzpDcy2FrSioImUDte3m4ZbNa7.5Qgt9KItZt1Ja7GR0z.jrG', 'ghhj', 4);
-INSERT INTO "public"."Customer" VALUES (10, 'test', '$2a$10$UA3fLsr29i3JyNh4ztm/B.JkNXW2zcgtFgbZx2IA7uZ4fDoZSl9Xq', 'aaaaa', 4);
+INSERT INTO "public"."Customer" VALUES (6, 'zalupa', '$2a$10$bft2fzlgly/2ekNn5kz8Q.4YWFHDYdpXUi6hx/0n31G554JhiivAW', 'idinaxui', 4, 't');
+INSERT INTO "public"."Customer" VALUES (9, 'gfhj', '$2a$10$9Ku2MzpDcy2FrSioImUDte3m4ZbNa7.5Qgt9KItZt1Ja7GR0z.jrG', 'ghhj', 4, 't');
+INSERT INTO "public"."Customer" VALUES (10, 'test', '$2a$10$UA3fLsr29i3JyNh4ztm/B.JkNXW2zcgtFgbZx2IA7uZ4fDoZSl9Xq', 'aaaaa', 4, 't');
+INSERT INTO "public"."Customer" VALUES (20, 'Sawtooth04', '$2a$10$X4VVrpks5Uj1eJsuUj6Mp.6Qb2Zb2SZg1j2uz2R6QDxzWaNwvoGym', 'andrey.y96@mail.ru', 4, 't');
 
 -- ----------------------------
 -- Table structure for CustomerNotification
@@ -218,7 +219,6 @@ CREATE TABLE "public"."CustomerNotification" (
 -- ----------------------------
 -- Records of CustomerNotification
 -- ----------------------------
-INSERT INTO "public"."CustomerNotification" VALUES (2, 8, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 't');
 INSERT INTO "public"."CustomerNotification" VALUES (5, 6, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 't');
 INSERT INTO "public"."CustomerNotification" VALUES (1, 6, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 't');
 INSERT INTO "public"."CustomerNotification" VALUES (3, 10, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 't');
@@ -275,7 +275,6 @@ CREATE TABLE "public"."RoomCustomer" (
 -- Records of RoomCustomer
 -- ----------------------------
 INSERT INTO "public"."RoomCustomer" VALUES (5, 15, 6, 1);
-INSERT INTO "public"."RoomCustomer" VALUES (6, 15, 8, 2);
 INSERT INTO "public"."RoomCustomer" VALUES (9, 15, 10, 8);
 
 -- ----------------------------
@@ -375,7 +374,6 @@ CREATE TABLE "public"."RoomCustomerRole" (
 -- Records of RoomCustomerRole
 -- ----------------------------
 INSERT INTO "public"."RoomCustomerRole" VALUES (1, 5, 2);
-INSERT INTO "public"."RoomCustomerRole" VALUES (2, 6, 2);
 INSERT INTO "public"."RoomCustomerRole" VALUES (5, 9, 1);
 
 -- ----------------------------
@@ -482,8 +480,6 @@ INSERT INTO "public"."RoomTaskComment" VALUES (16, 1, 5, 'TestTestTestTestTestTe
 INSERT INTO "public"."RoomTaskComment" VALUES (17, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-17 22:30:46');
 INSERT INTO "public"."RoomTaskComment" VALUES (18, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-18 22:30:54');
 INSERT INTO "public"."RoomTaskComment" VALUES (30, 1, 5, 'TestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest', '2023-11-30 22:32:20');
-INSERT INTO "public"."RoomTaskComment" VALUES (31, 1, 6, 'sdfsdsdf', '2023-11-02 21:48:46.242504');
-INSERT INTO "public"."RoomTaskComment" VALUES (32, 1, 6, 'zd2wsx3ec4rfr5vgst6bbyb7hnjkmi', '2023-11-03 22:10:54.124096');
 
 -- ----------------------------
 -- Table structure for RoomTaskVariant
@@ -538,6 +534,7 @@ CREATE OR REPLACE FUNCTION "public"."create_customer_table"()
 		"passwordHash" varchar(255),
 		email varchar(50),
 		"roleID" int4,
+		"verified" bool DEFAULT FALSE,
 		
 		FOREIGN KEY ("roleID") REFERENCES "Role" ("roleID") ON UPDATE CASCADE ON DELETE RESTRICT
 	);
@@ -1532,15 +1529,16 @@ END$BODY$
 -- ----------------------------
 -- Function structure for insert_default_customer
 -- ----------------------------
-DROP FUNCTION IF EXISTS "public"."insert_default_customer"("name" varchar, "password" varchar, "email" varchar);
-CREATE OR REPLACE FUNCTION "public"."insert_default_customer"("name" varchar, "password" varchar, "email" varchar)
-  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+DROP FUNCTION IF EXISTS "public"."insert_default_customer"("customer_name" varchar, "customer_password" varchar, "email" varchar);
+CREATE OR REPLACE FUNCTION "public"."insert_default_customer"("customer_name" varchar, "customer_password" varchar, "email" varchar)
+  RETURNS "pg_catalog"."int4" AS $BODY$BEGIN
 	
 	INSERT INTO "Customer" (name, "passwordHash", email, "roleID")
-		VALUES(name, password, email,
+		VALUES(customer_name, customer_password, email,
 		 (SELECT "roleID" FROM "Role" WHERE "Role".name = 'user' LIMIT 1));
 
-	RETURN;
+	RETURN (SELECT "customerID" FROM "Customer" WHERE "name" = "customer_name" AND "passwordHash" = "customer_password");
+	
 END$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
@@ -1858,6 +1856,19 @@ END$BODY$
   COST 100;
 
 -- ----------------------------
+-- Function structure for set_customer_verified
+-- ----------------------------
+DROP FUNCTION IF EXISTS "public"."set_customer_verified"("customer_id" int4);
+CREATE OR REPLACE FUNCTION "public"."set_customer_verified"("customer_id" int4)
+  RETURNS "pg_catalog"."void" AS $BODY$BEGIN
+	
+	UPDATE "Customer" SET "verified" = TRUE WHERE "customerID" = "customer_id";
+	
+END$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+-- ----------------------------
 -- Function structure for set_room_background_path
 -- ----------------------------
 DROP FUNCTION IF EXISTS "public"."set_room_background_path"("room_id" int4, "background_path" varchar);
@@ -1974,7 +1985,7 @@ SELECT setval('"public"."CustomerNotification_сustomerNotificationID_seq"', 7, 
 -- ----------------------------
 ALTER SEQUENCE "public"."Customer_customerID_seq"
 OWNED BY "public"."Customer"."customerID";
-SELECT setval('"public"."Customer_customerID_seq"', 13, true);
+SELECT setval('"public"."Customer_customerID_seq"', 21, true);
 
 -- ----------------------------
 -- Alter sequences owned by
