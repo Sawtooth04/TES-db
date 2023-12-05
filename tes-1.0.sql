@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 03/12/2023 21:14:25
+ Date: 05/12/2023 21:42:28
 */
 
 
@@ -187,11 +187,11 @@ CACHE 1;
 DROP TABLE IF EXISTS "public"."Customer";
 CREATE TABLE "public"."Customer" (
   "customerID" int4 NOT NULL DEFAULT nextval('"Customer_customerID_seq"'::regclass),
-  "name" varchar(30) COLLATE "pg_catalog"."default",
-  "passwordHash" varchar(255) COLLATE "pg_catalog"."default",
-  "email" varchar(50) COLLATE "pg_catalog"."default",
-  "roleID" int4,
-  "verified" bool
+  "name" varchar(30) COLLATE "pg_catalog"."default" NOT NULL,
+  "passwordHash" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
+  "email" varchar(50) COLLATE "pg_catalog"."default" NOT NULL,
+  "roleID" int4 NOT NULL,
+  "verified" bool NOT NULL
 )
 ;
 
@@ -201,7 +201,7 @@ CREATE TABLE "public"."Customer" (
 INSERT INTO "public"."Customer" VALUES (6, 'zalupa', '$2a$10$bft2fzlgly/2ekNn5kz8Q.4YWFHDYdpXUi6hx/0n31G554JhiivAW', 'idinaxui', 4, 't');
 INSERT INTO "public"."Customer" VALUES (9, 'gfhj', '$2a$10$9Ku2MzpDcy2FrSioImUDte3m4ZbNa7.5Qgt9KItZt1Ja7GR0z.jrG', 'ghhj', 4, 't');
 INSERT INTO "public"."Customer" VALUES (10, 'test', '$2a$10$UA3fLsr29i3JyNh4ztm/B.JkNXW2zcgtFgbZx2IA7uZ4fDoZSl9Xq', 'aaaaa', 4, 't');
-INSERT INTO "public"."Customer" VALUES (20, 'Sawtooth04', '$2a$10$X4VVrpks5Uj1eJsuUj6Mp.6Qb2Zb2SZg1j2uz2R6QDxzWaNwvoGym', 'andrey.y96@mail.ru', 4, 't');
+INSERT INTO "public"."Customer" VALUES (21, 'Sawtooth04', '$2a$10$z33AS9M9BVrGw321o12VmOvvXg92YE7Qe.Hhr7dRxVKtFBLVe462.', 'andrey.y96@mail.ru', 4, 't');
 
 -- ----------------------------
 -- Table structure for CustomerNotification
@@ -209,10 +209,10 @@ INSERT INTO "public"."Customer" VALUES (20, 'Sawtooth04', '$2a$10$X4VVrpks5Uj1eJ
 DROP TABLE IF EXISTS "public"."CustomerNotification";
 CREATE TABLE "public"."CustomerNotification" (
   "сustomerNotificationID" int4 NOT NULL DEFAULT nextval('"CustomerNotification_сustomerNotificationID_seq"'::regclass),
-  "customerID" int4,
-  "header" varchar(100) COLLATE "pg_catalog"."default",
-  "text" varchar(300) COLLATE "pg_catalog"."default",
-  "isRead" bool DEFAULT false
+  "customerID" int4 NOT NULL,
+  "header" varchar(100) COLLATE "pg_catalog"."default" NOT NULL,
+  "text" varchar(300) COLLATE "pg_catalog"."default" NOT NULL,
+  "isRead" bool NOT NULL DEFAULT false
 )
 ;
 
@@ -230,7 +230,7 @@ INSERT INTO "public"."CustomerNotification" VALUES (6, 9, 'Test Room 1', 'Ваш
 DROP TABLE IF EXISTS "public"."Role";
 CREATE TABLE "public"."Role" (
   "roleID" int4 NOT NULL DEFAULT nextval('"Role_roleID_seq"'::regclass),
-  "name" varchar(30) COLLATE "pg_catalog"."default"
+  "name" varchar(30) COLLATE "pg_catalog"."default" NOT NULL
 )
 ;
 
@@ -248,9 +248,9 @@ CREATE TABLE "public"."Room" (
   "roomID" int4 NOT NULL DEFAULT nextval('"Room_roomID_seq"'::regclass),
   "name" varchar(30) COLLATE "pg_catalog"."default" NOT NULL,
   "ownerID" int4 NOT NULL,
-  "description" varchar(255) COLLATE "pg_catalog"."default",
-  "color" int4,
-  "backgroundPath" varchar(200) COLLATE "pg_catalog"."default"
+  "description" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
+  "color" int4 NOT NULL,
+  "backgroundPath" varchar(200) COLLATE "pg_catalog"."default" NOT NULL
 )
 ;
 
@@ -265,8 +265,8 @@ INSERT INTO "public"."Room" VALUES (15, 'Test Room 1', 6, 'Test room description
 DROP TABLE IF EXISTS "public"."RoomCustomer";
 CREATE TABLE "public"."RoomCustomer" (
   "roomCustomerID" int4 NOT NULL DEFAULT nextval('"RoomCustomer_roomCustomerID_seq"'::regclass),
-  "roomID" int4,
-  "customerID" int4,
+  "roomID" int4 NOT NULL,
+  "customerID" int4 NOT NULL,
   "variant" int4 NOT NULL DEFAULT nextval('"RoomCustomer_variant_seq"'::regclass)
 )
 ;
@@ -283,11 +283,11 @@ INSERT INTO "public"."RoomCustomer" VALUES (9, 15, 10, 8);
 DROP TABLE IF EXISTS "public"."RoomCustomerMessage";
 CREATE TABLE "public"."RoomCustomerMessage" (
   "roomCustomerMessageID" int4 NOT NULL DEFAULT nextval('"RoomCustomerMessage_roomCustomerMessageID_seq"'::regclass),
-  "roomCustomerID" int4,
-  "roomTaskID" int4,
-  "sent" timestamp(6),
-  "text" varchar(300) COLLATE "pg_catalog"."default",
-  "isRead" bool
+  "roomCustomerID" int4 NOT NULL,
+  "roomTaskID" int4 NOT NULL,
+  "sent" timestamp(6) NOT NULL,
+  "text" varchar(300) COLLATE "pg_catalog"."default" NOT NULL,
+  "isRead" bool NOT NULL
 )
 ;
 
@@ -304,8 +304,8 @@ INSERT INTO "public"."RoomCustomerMessage" VALUES (17, 5, 15, '2023-11-23 17:37:
 DROP TABLE IF EXISTS "public"."RoomCustomerMessageRecipient";
 CREATE TABLE "public"."RoomCustomerMessageRecipient" (
   "roomCustomerMessageRecipientID" int4 NOT NULL DEFAULT nextval('"RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"'::regclass),
-  "roomCustomerMessageID" int4,
-  "roomCustomerID" int4
+  "roomCustomerMessageID" int4 NOT NULL,
+  "roomCustomerID" int4 NOT NULL
 )
 ;
 
@@ -319,9 +319,9 @@ CREATE TABLE "public"."RoomCustomerMessageRecipient" (
 DROP TABLE IF EXISTS "public"."RoomCustomerPost";
 CREATE TABLE "public"."RoomCustomerPost" (
   "roomCustomerPostID" int4 NOT NULL DEFAULT nextval('"RoomCustomerPost_roomPostID_seq"'::regclass),
-  "roomCustomerID" int4,
-  "posted" timestamp(6),
-  "text" varchar(300) COLLATE "pg_catalog"."default"
+  "roomCustomerID" int4 NOT NULL,
+  "posted" timestamp(6) NOT NULL,
+  "text" varchar(300) COLLATE "pg_catalog"."default" NOT NULL
 )
 ;
 
@@ -365,8 +365,8 @@ INSERT INTO "public"."RoomCustomerPost" VALUES (30, 5, '2023-10-23 22:19:00', 'T
 DROP TABLE IF EXISTS "public"."RoomCustomerRole";
 CREATE TABLE "public"."RoomCustomerRole" (
   "roomCustomerRoleID" int4 NOT NULL DEFAULT nextval('"RoomCustomerRole_roomCustomerRoleID_seq"'::regclass),
-  "roomCustomerID" int4,
-  "roomRoleID" int4
+  "roomCustomerID" int4 NOT NULL,
+  "roomRoleID" int4 NOT NULL
 )
 ;
 
@@ -382,7 +382,7 @@ INSERT INTO "public"."RoomCustomerRole" VALUES (5, 9, 1);
 DROP TABLE IF EXISTS "public"."RoomRole";
 CREATE TABLE "public"."RoomRole" (
   "roomRoleID" int4 NOT NULL DEFAULT nextval('"RoomRole_roomRoleID_seq"'::regclass),
-  "name" varchar(30) COLLATE "pg_catalog"."default"
+  "name" varchar(30) COLLATE "pg_catalog"."default" NOT NULL
 )
 ;
 
@@ -398,11 +398,11 @@ INSERT INTO "public"."RoomRole" VALUES (2, 'teacher');
 DROP TABLE IF EXISTS "public"."RoomSolution";
 CREATE TABLE "public"."RoomSolution" (
   "roomSolutionID" int4 NOT NULL DEFAULT nextval('"RoomSolution_roomSolutionID_seq"'::regclass),
-  "path" varchar(50) COLLATE "pg_catalog"."default",
-  "isSuccessfullyTested" bool,
-  "isAccepted" bool,
-  "roomTaskID" int4,
-  "roomCustomerID" int4
+  "path" varchar(50) COLLATE "pg_catalog"."default" NOT NULL,
+  "isSuccessfullyTested" bool NOT NULL,
+  "isAccepted" bool NOT NULL,
+  "roomTaskID" int4 NOT NULL,
+  "roomCustomerID" int4 NOT NULL
 )
 ;
 
@@ -417,11 +417,11 @@ INSERT INTO "public"."RoomSolution" VALUES (21, 'D:\TES\solutions\15\1\test\sour
 DROP TABLE IF EXISTS "public"."RoomTask";
 CREATE TABLE "public"."RoomTask" (
   "roomTaskID" int4 NOT NULL DEFAULT nextval('"RoomTask_roomTaskID_seq"'::regclass),
-  "roomID" int4,
-  "name" varchar(35) COLLATE "pg_catalog"."default",
-  "description" varchar(500) COLLATE "pg_catalog"."default",
-  "lastTerm" timestamp(6),
-  "added" timestamp(6)
+  "roomID" int4 NOT NULL,
+  "name" varchar(35) COLLATE "pg_catalog"."default" NOT NULL,
+  "description" varchar(500) COLLATE "pg_catalog"."default" NOT NULL,
+  "lastTerm" timestamp(6) NOT NULL,
+  "added" timestamp(6) NOT NULL
 )
 ;
 
@@ -453,10 +453,10 @@ INSERT INTO "public"."RoomTask" VALUES (18, 15, 'gfhgfghgfhfgh', 'fghgfhhfgfghfg
 DROP TABLE IF EXISTS "public"."RoomTaskComment";
 CREATE TABLE "public"."RoomTaskComment" (
   "roomTaskCommentID" int4 NOT NULL DEFAULT nextval('"RoomTaskComment_roomTaskCommentID_seq"'::regclass),
-  "roomTaskID" int4,
-  "roomCustomerID" int4,
-  "comment" varchar(155) COLLATE "pg_catalog"."default",
-  "posted" timestamp(6)
+  "roomTaskID" int4 NOT NULL,
+  "roomCustomerID" int4 NOT NULL,
+  "comment" varchar(155) COLLATE "pg_catalog"."default" NOT NULL,
+  "posted" timestamp(6) NOT NULL
 )
 ;
 
@@ -487,10 +487,10 @@ INSERT INTO "public"."RoomTaskComment" VALUES (30, 1, 5, 'TestTestTestTestTestTe
 DROP TABLE IF EXISTS "public"."RoomTaskVariant";
 CREATE TABLE "public"."RoomTaskVariant" (
   "roomTaskVariantID" int4 NOT NULL DEFAULT nextval('"RoomTaskVariant_roomTaskVariantID_seq"'::regclass),
-  "roomTaskID" int4,
-  "variant" int4,
-  "path" varchar(50) COLLATE "pg_catalog"."default",
-  "description" varchar(255) COLLATE "pg_catalog"."default"
+  "roomTaskID" int4 NOT NULL,
+  "variant" int4 NOT NULL,
+  "path" varchar(50) COLLATE "pg_catalog"."default" NOT NULL,
+  "description" varchar(255) COLLATE "pg_catalog"."default" NOT NULL
 )
 ;
 
@@ -509,10 +509,10 @@ CREATE OR REPLACE FUNCTION "public"."create_customer_notification_table"()
 	
 	CREATE TABLE "CustomerNotification" (
 		"сustomerNotificationID" serial PRIMARY KEY,
-		"сustomerID" int4,
-		"header" varchar(100),
-		"text" varchar(300),
-		"isRead" bool DEFAULT FALSE, 
+		"сustomerID" int4 NOT NULL,
+		"header" varchar(100) NOT NULL,
+		"text" varchar(300) NOT NULL,
+		"isRead" bool DEFAULT FALSE NOT NULL, 
 		
 		FOREIGN KEY ("сustomerID") REFERENCES "Customer" ("customerID") ON UPDATE CASCADE ON DELETE CASCADE);
 
@@ -530,11 +530,11 @@ CREATE OR REPLACE FUNCTION "public"."create_customer_table"()
 	
 	CREATE TABLE "Customer" (
 		"customerID" serial PRIMARY KEY,
-		name varchar(30) UNIQUE,
-		"passwordHash" varchar(255),
-		email varchar(50),
-		"roleID" int4,
-		"verified" bool DEFAULT FALSE,
+		name varchar(30) UNIQUE NOT NULL,
+		"passwordHash" varchar(255) NOT NULL,
+		email varchar(50) NOT NULL,
+		"roleID" int4 NOT NULL,
+		"verified" bool DEFAULT FALSE NOT NULL,
 		
 		FOREIGN KEY ("roleID") REFERENCES "Role" ("roleID") ON UPDATE CASCADE ON DELETE RESTRICT
 	);
@@ -553,7 +553,7 @@ CREATE OR REPLACE FUNCTION "public"."create_role_table"()
 	
 	CREATE TABLE "Role" (
 		"roleID" serial PRIMARY KEY,
-		name varchar(30)
+		name varchar(30) NOT NULL
 	);
 	
 	INSERT INTO "Role" (name) VALUES("user");
@@ -572,8 +572,8 @@ CREATE OR REPLACE FUNCTION "public"."create_room_customer_message_recipiend_tabl
 	
 	CREATE TABLE "RoomCustomerMessageRecipient" (
 		"roomCustomerMessageRecipientID" serial PRIMARY KEY,
-		"roomCustomerMessageID" int4,
-		"roomCustomerID" int4,
+		"roomCustomerMessageID" int4 NOT NULL,
+		"roomCustomerID" int4 NOT NULL,
 		
 		FOREIGN KEY ("roomCustomerMessageID") REFERENCES "RoomCustomerMessage" ("roomCustomerMessageID") ON UPDATE CASCADE ON DELETE CASCADE,
 		FOREIGN KEY ("roomCustomerID") REFERENCES "RoomCustomer" ("roomCustomerID") ON UPDATE CASCADE ON DELETE CASCADE
@@ -593,11 +593,11 @@ CREATE OR REPLACE FUNCTION "public"."create_room_customer_message_table"()
 	
 	CREATE TABLE "RoomCustomerMessage" (
 		"roomCustomerMessageID" serial PRIMARY KEY,
-		"roomCustomerID" int4,
-		"roomTaskID" int4,
-		"sent" timestamp,
-		"text" varchar(300),
-		"isRead" bool,
+		"roomCustomerID" int4 NOT NULL,
+		"roomTaskID" int4 NOT NULL,
+		"sent" timestamp NOT NULL,
+		"text" varchar(300) NOT NULL,
+		"isRead" bool NOT NULL,
 		
 		FOREIGN KEY ("roomCustomerID") REFERENCES "RoomCustomer" ("roomCustomerID") ON UPDATE CASCADE ON DELETE CASCADE,
 		FOREIGN KEY ("roomTaskID") REFERENCES "RoomTask" ("roomTaskID") ON UPDATE CASCADE ON DELETE CASCADE);
@@ -616,9 +616,9 @@ CREATE OR REPLACE FUNCTION "public"."create_room_customer_post_table"()
 	
 	CREATE TABLE "RoomCustomerPost" (
 		"roomCustomerPostID" serial PRIMARY KEY,
-		"roomCustomerID" int4,
-		"posted" timestamp,
-		"text" varchar(300),
+		"roomCustomerID" int4 NOT NULL,
+		"posted" timestamp NOT NULL,
+		"text" varchar(300) NOT NULL,
 		
 		FOREIGN KEY ("roomCustomerID") REFERENCES "RoomCustomer" ("roomCustomerID") ON UPDATE CASCADE ON DELETE CASCADE
 	);
@@ -637,8 +637,8 @@ CREATE OR REPLACE FUNCTION "public"."create_room_customer_role_table"()
 	
 	CREATE TABLE "RoomCustomerRole" (
 		"roomCustomerRoleID" serial PRIMARY KEY,
-		"roomCustomerID" int4 UNIQUE,
-		"roomRoleID" int4,
+		"roomCustomerID" int4 UNIQUE NOT NULL,
+		"roomRoleID" int4 NOT NULL,
 		
 		FOREIGN KEY ("roomCustomerID") REFERENCES "RoomCustomer" ("roomCustomerID") ON UPDATE CASCADE ON DELETE CASCADE,
 		FOREIGN KEY ("roomRoleID") REFERENCES "RoomRole" ("roomRoleID") ON UPDATE CASCADE ON DELETE RESTRICT
@@ -658,9 +658,9 @@ CREATE OR REPLACE FUNCTION "public"."create_room_customer_table"()
 	
 	CREATE TABLE "RoomCustomer" (
 		"roomCustomerID" serial PRIMARY KEY,
-		"roomID" int4,
-		"customerID" int4,
-		"variant" serial,
+		"roomID" int4 NOT NULL,
+		"customerID" int4 NOT NULL,
+		"variant" serial NOT NULL,
 		
 		FOREIGN KEY ("roomID") REFERENCES "Room" ("roomID") ON UPDATE CASCADE ON DELETE CASCADE,
 		FOREIGN KEY ("customerID") REFERENCES "Customer" ("customerID") ON UPDATE CASCADE ON DELETE CASCADE
@@ -680,7 +680,7 @@ CREATE OR REPLACE FUNCTION "public"."create_room_role_table"()
 	
 	CREATE TABLE "RoomRole" (
 		"roomRoleID" serial PRIMARY KEY,
-		name varchar(30)
+		name varchar(30) NOT NULL
 	);
 	
 	INSERT INTO "RoomRole" (name) VALUES('member');
@@ -700,11 +700,11 @@ CREATE OR REPLACE FUNCTION "public"."create_room_solution_table"()
 	
 	CREATE TABLE "RoomSolution" (
 		"roomSolutionID" serial PRIMARY KEY,
-		"roomTaskID" int4,
-		"roomCustomerID" int4,
-		"path" varchar(50),
-		"isSuccessfullyTested" bool,
-		"isAccepted" bool,
+		"roomTaskID" int4 NOT NULL,
+		"roomCustomerID" int4 NOT NULL,
+		"path" varchar(50) NOT NULL,
+		"isSuccessfullyTested" bool NOT NULL,
+		"isAccepted" bool NOT NULL,
 		
 		FOREIGN KEY ("roomTaskID") REFERENCES "RoomTask" ("roomTaskID") ON UPDATE CASCADE ON DELETE CASCADE,
 		FOREIGN KEY ("roomCustomerID") REFERENCES "RoomCustomer" ("roomCustomerID") ON UPDATE CASCADE ON DELETE CASCADE
@@ -724,11 +724,11 @@ CREATE OR REPLACE FUNCTION "public"."create_room_table"()
 	
 	CREATE TABLE "Room" (
 		"roomID" serial PRIMARY KEY,
-		name varchar(30),
-		"ownerID" int4,
-		"description" varchar(255),
-		"color" int4 DEFAULT 81133197,
-		"backgroundPath" varchar(200),
+		name varchar(30) NOT NULL,
+		"ownerID" int4 NOT NULL,
+		"description" varchar(255) NOT NULL,
+		"color" int4 DEFAULT 81133197 NOT NULL,
+		"backgroundPath" varchar(200) NOT NULL,
 		
 		CONSTRAINT room_name_owner_uniq UNIQUE(name, "ownerID"),
 		FOREIGN KEY ("ownerID") REFERENCES "Customer" ("customerID") ON UPDATE CASCADE ON DELETE CASCADE
@@ -748,10 +748,10 @@ CREATE OR REPLACE FUNCTION "public"."create_room_task_comment_table"()
 
 	CREATE TABLE "RoomTaskComment" (
 		"roomTaskCommentID" serial PRIMARY KEY,
-		"roomTaskID" int4,
-		"roomCustomerID" int4,
-		"comment" varchar(155),
-		"posted" timestamp,
+		"roomTaskID" int4 NOT NULL,
+		"roomCustomerID" int4 NOT NULL,
+		"comment" varchar(155) NOT NULL,
+		"posted" timestamp NOT NULL,
 		
 		FOREIGN KEY ("roomTaskID") REFERENCES "RoomTask" ("roomTaskID") ON UPDATE CASCADE ON DELETE CASCADE,
 		FOREIGN KEY ("roomCustomerID") REFERENCES "RoomCustomer" ("roomCustomerID") ON UPDATE CASCADE
@@ -772,11 +772,11 @@ CREATE OR REPLACE FUNCTION "public"."create_room_task_table"()
 	
 	CREATE TABLE "RoomTask" (
 		"roomTaskID" serial PRIMARY KEY,
-		"roomID" int4,
-		"name" varchar(35),
-		"description" varchar(500),
-		"added" timestamp,
-		"lastTerm" timestamp,
+		"roomID" int4 NOT NULL,
+		"name" varchar(35) NOT NULL,
+		"description" varchar(500) NOT NULL,
+		"added" timestamp NOT NULL,
+		"lastTerm" timestamp NOT NULL,
 		
 		FOREIGN KEY ("roomID") REFERENCES "Room" ("roomID") ON UPDATE CASCADE ON DELETE CASCADE
 	);
@@ -795,10 +795,10 @@ CREATE OR REPLACE FUNCTION "public"."create_room_task_variant_table"()
 	
 	CREATE TABLE "RoomTaskVariant" (
 		"roomTaskVariantID" serial PRIMARY KEY,
-		"roomTaskID" int4,
-		"variant" int4,
-		"path" varchar(50),
-		"description" varchar(255),
+		"roomTaskID" int4 NOT NULL,
+		"variant" int4 NOT NULL,
+		"path" varchar(50) NOT NULL,
+		"description" varchar(255) NOT NULL,
 		
 		FOREIGN KEY ("roomTaskID") REFERENCES "RoomTask" ("roomTaskID") ON UPDATE CASCADE ON DELETE CASCADE,
 		CONSTRAINT room_task_path_uniq UNIQUE("roomTaskID", "path"),
@@ -1978,105 +1978,105 @@ END$BODY$
 -- ----------------------------
 ALTER SEQUENCE "public"."CustomerNotification_сustomerNotificationID_seq"
 OWNED BY "public"."CustomerNotification"."сustomerNotificationID";
-SELECT setval('"public"."CustomerNotification_сustomerNotificationID_seq"', 7, true);
+SELECT setval('"public"."CustomerNotification_сustomerNotificationID_seq"', 8, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."Customer_customerID_seq"
 OWNED BY "public"."Customer"."customerID";
-SELECT setval('"public"."Customer_customerID_seq"', 21, true);
+SELECT setval('"public"."Customer_customerID_seq"', 23, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."Role_roleID_seq"
 OWNED BY "public"."Role"."roleID";
-SELECT setval('"public"."Role_roleID_seq"', 8, true);
+SELECT setval('"public"."Role_roleID_seq"', 9, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"
 OWNED BY "public"."RoomCustomerMessageRecipient"."roomCustomerMessageRecipientID";
-SELECT setval('"public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"', 18, true);
+SELECT setval('"public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"', 19, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerMessage_roomCustomerMessageID_seq"
 OWNED BY "public"."RoomCustomerMessage"."roomCustomerMessageID";
-SELECT setval('"public"."RoomCustomerMessage_roomCustomerMessageID_seq"', 19, true);
+SELECT setval('"public"."RoomCustomerMessage_roomCustomerMessageID_seq"', 20, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerPost_roomPostID_seq"
 OWNED BY "public"."RoomCustomerPost"."roomCustomerPostID";
-SELECT setval('"public"."RoomCustomerPost_roomPostID_seq"', 32, true);
+SELECT setval('"public"."RoomCustomerPost_roomPostID_seq"', 33, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerRole_roomCustomerRoleID_seq"
 OWNED BY "public"."RoomCustomerRole"."roomCustomerRoleID";
-SELECT setval('"public"."RoomCustomerRole_roomCustomerRoleID_seq"', 6, true);
+SELECT setval('"public"."RoomCustomerRole_roomCustomerRoleID_seq"', 7, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomer_roomCustomerID_seq"
 OWNED BY "public"."RoomCustomer"."roomCustomerID";
-SELECT setval('"public"."RoomCustomer_roomCustomerID_seq"', 11, true);
+SELECT setval('"public"."RoomCustomer_roomCustomerID_seq"', 12, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomer_variant_seq"
 OWNED BY "public"."RoomCustomer"."variant";
-SELECT setval('"public"."RoomCustomer_variant_seq"', 10, true);
+SELECT setval('"public"."RoomCustomer_variant_seq"', 11, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomRole_roomRoleID_seq"
 OWNED BY "public"."RoomRole"."roomRoleID";
-SELECT setval('"public"."RoomRole_roomRoleID_seq"', 4, true);
+SELECT setval('"public"."RoomRole_roomRoleID_seq"', 5, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomSolution_roomSolutionID_seq"
 OWNED BY "public"."RoomSolution"."roomSolutionID";
-SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 22, true);
+SELECT setval('"public"."RoomSolution_roomSolutionID_seq"', 23, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomTaskComment_roomTaskCommentID_seq"
 OWNED BY "public"."RoomTaskComment"."roomTaskCommentID";
-SELECT setval('"public"."RoomTaskComment_roomTaskCommentID_seq"', 34, true);
+SELECT setval('"public"."RoomTaskComment_roomTaskCommentID_seq"', 35, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomTaskVariant_roomTaskVariantID_seq"
 OWNED BY "public"."RoomTaskVariant"."roomTaskVariantID";
-SELECT setval('"public"."RoomTaskVariant_roomTaskVariantID_seq"', 6, true);
+SELECT setval('"public"."RoomTaskVariant_roomTaskVariantID_seq"', 7, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomTask_roomTaskID_seq"
 OWNED BY "public"."RoomTask"."roomTaskID";
-SELECT setval('"public"."RoomTask_roomTaskID_seq"', 20, true);
+SELECT setval('"public"."RoomTask_roomTaskID_seq"', 21, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."Room_roomID_seq"
 OWNED BY "public"."Room"."roomID";
-SELECT setval('"public"."Room_roomID_seq"', 17, true);
+SELECT setval('"public"."Room_roomID_seq"', 18, true);
 
 -- ----------------------------
 -- Primary Key structure for table Customer
