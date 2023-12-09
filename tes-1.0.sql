@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 05/12/2023 21:42:28
+ Date: 09/12/2023 22:17:16
 */
 
 
@@ -297,6 +297,7 @@ CREATE TABLE "public"."RoomCustomerMessage" (
 INSERT INTO "public"."RoomCustomerMessage" VALUES (15, 5, 1, '2023-11-18 22:19:19.566543', 'Ya eby? Smotri gde sam nakosyachil', 't');
 INSERT INTO "public"."RoomCustomerMessage" VALUES (16, 5, 1, '2023-11-18 22:25:41.158212', 'Xarosh, krasavchik', 't');
 INSERT INTO "public"."RoomCustomerMessage" VALUES (17, 5, 15, '2023-11-23 17:37:19.493323', 'Prinyato', 't');
+INSERT INTO "public"."RoomCustomerMessage" VALUES (20, 9, 1, '2023-12-09 21:51:16.61209', 'Helloooo', 'f');
 
 -- ----------------------------
 -- Table structure for RoomCustomerMessageRecipient
@@ -312,6 +313,7 @@ CREATE TABLE "public"."RoomCustomerMessageRecipient" (
 -- ----------------------------
 -- Records of RoomCustomerMessageRecipient
 -- ----------------------------
+INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (19, 20, 5);
 
 -- ----------------------------
 -- Table structure for RoomCustomerPost
@@ -1149,7 +1151,7 @@ DROP FUNCTION IF EXISTS "public"."get_room_customers_by_role_id"("room_id" int4,
 CREATE OR REPLACE FUNCTION "public"."get_room_customers_by_role_id"("room_id" int4, "role_id" int4)
   RETURNS SETOF "public"."Customer" AS $BODY$BEGIN
 
-	RETURN QUERY SELECT c."customerID", c."name", c."passwordHash", c."email", c."roleID" FROM "RoomCustomerRole" AS rcr 
+	RETURN QUERY SELECT c."customerID", c."name", c."passwordHash", c."email", c."roleID", c."verified" FROM "RoomCustomerRole" AS rcr 
 		LEFT JOIN "RoomCustomer" AS rc ON rc."roomCustomerID" = rcr."roomCustomerID"
 		LEFT JOIN "Customer" AS c on c."customerID" = rc."customerID"
 		WHERE rcr."roomRoleID" = "role_id" AND rc."roomID" = "room_id"
@@ -1999,14 +2001,14 @@ SELECT setval('"public"."Role_roleID_seq"', 9, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"
 OWNED BY "public"."RoomCustomerMessageRecipient"."roomCustomerMessageRecipientID";
-SELECT setval('"public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"', 19, true);
+SELECT setval('"public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"', 20, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerMessage_roomCustomerMessageID_seq"
 OWNED BY "public"."RoomCustomerMessage"."roomCustomerMessageID";
-SELECT setval('"public"."RoomCustomerMessage_roomCustomerMessageID_seq"', 20, true);
+SELECT setval('"public"."RoomCustomerMessage_roomCustomerMessageID_seq"', 21, true);
 
 -- ----------------------------
 -- Alter sequences owned by
