@@ -12,7 +12,7 @@
  Target Server Version : 150001
  File Encoding         : 65001
 
- Date: 09/12/2023 22:17:16
+ Date: 19/12/2023 12:33:54
 */
 
 
@@ -198,10 +198,6 @@ CREATE TABLE "public"."Customer" (
 -- ----------------------------
 -- Records of Customer
 -- ----------------------------
-INSERT INTO "public"."Customer" VALUES (6, 'zalupa', '$2a$10$bft2fzlgly/2ekNn5kz8Q.4YWFHDYdpXUi6hx/0n31G554JhiivAW', 'idinaxui', 4, 't');
-INSERT INTO "public"."Customer" VALUES (9, 'gfhj', '$2a$10$9Ku2MzpDcy2FrSioImUDte3m4ZbNa7.5Qgt9KItZt1Ja7GR0z.jrG', 'ghhj', 4, 't');
-INSERT INTO "public"."Customer" VALUES (10, 'test', '$2a$10$UA3fLsr29i3JyNh4ztm/B.JkNXW2zcgtFgbZx2IA7uZ4fDoZSl9Xq', 'aaaaa', 4, 't');
-INSERT INTO "public"."Customer" VALUES (21, 'Sawtooth04', '$2a$10$z33AS9M9BVrGw321o12VmOvvXg92YE7Qe.Hhr7dRxVKtFBLVe462.', 'andrey.y96@mail.ru', 4, 't');
 
 -- ----------------------------
 -- Table structure for CustomerNotification
@@ -219,10 +215,6 @@ CREATE TABLE "public"."CustomerNotification" (
 -- ----------------------------
 -- Records of CustomerNotification
 -- ----------------------------
-INSERT INTO "public"."CustomerNotification" VALUES (5, 6, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 't');
-INSERT INTO "public"."CustomerNotification" VALUES (1, 6, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 't');
-INSERT INTO "public"."CustomerNotification" VALUES (3, 10, 'Test Room 1', 'Добавлено новое задание: gfhgfghgfhfgh', 't');
-INSERT INTO "public"."CustomerNotification" VALUES (6, 9, 'Test Room 1', 'Ваше решение для задания Test 1 было принято', 'f');
 
 -- ----------------------------
 -- Table structure for Role
@@ -257,7 +249,6 @@ CREATE TABLE "public"."Room" (
 -- ----------------------------
 -- Records of Room
 -- ----------------------------
-INSERT INTO "public"."Room" VALUES (15, 'Test Room 1', 6, 'Test room description. Hello world!', -14211289, 'D:\TES\backgrounds/15.jpg');
 
 -- ----------------------------
 -- Table structure for RoomCustomer
@@ -274,8 +265,6 @@ CREATE TABLE "public"."RoomCustomer" (
 -- ----------------------------
 -- Records of RoomCustomer
 -- ----------------------------
-INSERT INTO "public"."RoomCustomer" VALUES (5, 15, 6, 1);
-INSERT INTO "public"."RoomCustomer" VALUES (9, 15, 10, 8);
 
 -- ----------------------------
 -- Table structure for RoomCustomerMessage
@@ -294,10 +283,6 @@ CREATE TABLE "public"."RoomCustomerMessage" (
 -- ----------------------------
 -- Records of RoomCustomerMessage
 -- ----------------------------
-INSERT INTO "public"."RoomCustomerMessage" VALUES (15, 5, 1, '2023-11-18 22:19:19.566543', 'Ya eby? Smotri gde sam nakosyachil', 't');
-INSERT INTO "public"."RoomCustomerMessage" VALUES (16, 5, 1, '2023-11-18 22:25:41.158212', 'Xarosh, krasavchik', 't');
-INSERT INTO "public"."RoomCustomerMessage" VALUES (17, 5, 15, '2023-11-23 17:37:19.493323', 'Prinyato', 't');
-INSERT INTO "public"."RoomCustomerMessage" VALUES (20, 9, 1, '2023-12-09 21:51:16.61209', 'Helloooo', 'f');
 
 -- ----------------------------
 -- Table structure for RoomCustomerMessageRecipient
@@ -313,7 +298,6 @@ CREATE TABLE "public"."RoomCustomerMessageRecipient" (
 -- ----------------------------
 -- Records of RoomCustomerMessageRecipient
 -- ----------------------------
-INSERT INTO "public"."RoomCustomerMessageRecipient" VALUES (19, 20, 5);
 
 -- ----------------------------
 -- Table structure for RoomCustomerPost
@@ -330,36 +314,6 @@ CREATE TABLE "public"."RoomCustomerPost" (
 -- ----------------------------
 -- Records of RoomCustomerPost
 -- ----------------------------
-INSERT INTO "public"."RoomCustomerPost" VALUES (1, 5, '2023-10-22 23:09:18.571314', 'Test post. Hello world! 1');
-INSERT INTO "public"."RoomCustomerPost" VALUES (2, 5, '2023-10-22 23:09:18.571315', 'Test post. Hello world! 1');
-INSERT INTO "public"."RoomCustomerPost" VALUES (3, 5, '2023-10-23 22:15:20', 'Test post. Hello world 1');
-INSERT INTO "public"."RoomCustomerPost" VALUES (4, 5, '2023-10-23 22:15:48', 'Test post. Hello world 1');
-INSERT INTO "public"."RoomCustomerPost" VALUES (5, 5, '2023-10-23 22:15:55', 'Test post. Hello world 1');
-INSERT INTO "public"."RoomCustomerPost" VALUES (6, 5, '2023-10-23 22:16:05', 'Test post. Hello world 1');
-INSERT INTO "public"."RoomCustomerPost" VALUES (7, 5, '2023-10-23 22:16:13', 'Test post. Hello world 1');
-INSERT INTO "public"."RoomCustomerPost" VALUES (8, 5, '2023-10-23 22:16:20', 'Test post. Hello world 1');
-INSERT INTO "public"."RoomCustomerPost" VALUES (9, 5, '2023-10-23 22:16:28', 'Test post. Hello world 1');
-INSERT INTO "public"."RoomCustomerPost" VALUES (10, 5, '2023-10-23 22:16:35', 'Test post. Hello world 1');
-INSERT INTO "public"."RoomCustomerPost" VALUES (11, 5, '2023-10-23 22:16:42', 'Test post. Hello world 2');
-INSERT INTO "public"."RoomCustomerPost" VALUES (12, 5, '2023-10-23 22:16:49', 'Test post. Hello world 2');
-INSERT INTO "public"."RoomCustomerPost" VALUES (13, 5, '2023-10-23 22:16:55', 'Test post. Hello world 2');
-INSERT INTO "public"."RoomCustomerPost" VALUES (14, 5, '2023-10-23 22:17:10', 'Test post. Hello world 2');
-INSERT INTO "public"."RoomCustomerPost" VALUES (15, 5, '2023-10-23 22:17:18', 'Test post. Hello world 2');
-INSERT INTO "public"."RoomCustomerPost" VALUES (16, 5, '2023-10-23 22:17:24', 'Test post. Hello world 2');
-INSERT INTO "public"."RoomCustomerPost" VALUES (17, 5, '2023-10-23 22:17:29', 'Test post. Hello world 2');
-INSERT INTO "public"."RoomCustomerPost" VALUES (18, 5, '2023-10-23 22:17:35', 'Test post. Hello world 2');
-INSERT INTO "public"."RoomCustomerPost" VALUES (19, 5, '2023-10-23 22:17:44', 'Test post. Hello world 2');
-INSERT INTO "public"."RoomCustomerPost" VALUES (20, 5, '2023-10-23 22:17:51', 'Test post. Hello world 2');
-INSERT INTO "public"."RoomCustomerPost" VALUES (21, 5, '2023-10-23 22:18:00', 'Test post. Hello world 3');
-INSERT INTO "public"."RoomCustomerPost" VALUES (22, 5, '2023-10-23 22:18:05', 'Test post. Hello world 3');
-INSERT INTO "public"."RoomCustomerPost" VALUES (23, 5, '2023-10-23 22:18:11', 'Test post. Hello world 3');
-INSERT INTO "public"."RoomCustomerPost" VALUES (24, 5, '2023-10-23 22:18:16', 'Test post. Hello world 3');
-INSERT INTO "public"."RoomCustomerPost" VALUES (25, 5, '2023-10-23 22:18:23', 'Test post. Hello world 3');
-INSERT INTO "public"."RoomCustomerPost" VALUES (26, 5, '2023-10-23 22:18:29', 'Test post. Hello world 3');
-INSERT INTO "public"."RoomCustomerPost" VALUES (27, 5, '2023-10-23 22:18:36', 'Test post. Hello world 3');
-INSERT INTO "public"."RoomCustomerPost" VALUES (28, 5, '2023-10-23 22:18:48', 'Test post. Hello world 3');
-INSERT INTO "public"."RoomCustomerPost" VALUES (29, 5, '2023-10-23 22:18:54', 'Test post. Hello world 3');
-INSERT INTO "public"."RoomCustomerPost" VALUES (30, 5, '2023-10-23 22:19:00', 'Test post. Hello world 3');
 
 -- ----------------------------
 -- Table structure for RoomCustomerRole
@@ -375,8 +329,6 @@ CREATE TABLE "public"."RoomCustomerRole" (
 -- ----------------------------
 -- Records of RoomCustomerRole
 -- ----------------------------
-INSERT INTO "public"."RoomCustomerRole" VALUES (1, 5, 2);
-INSERT INTO "public"."RoomCustomerRole" VALUES (5, 9, 1);
 
 -- ----------------------------
 -- Table structure for RoomRole
@@ -411,7 +363,6 @@ CREATE TABLE "public"."RoomSolution" (
 -- ----------------------------
 -- Records of RoomSolution
 -- ----------------------------
-INSERT INTO "public"."RoomSolution" VALUES (21, 'D:\TES\solutions\15\1\test\sources', 't', 't', 1, 9);
 
 -- ----------------------------
 -- Table structure for RoomTask
@@ -430,24 +381,6 @@ CREATE TABLE "public"."RoomTask" (
 -- ----------------------------
 -- Records of RoomTask
 -- ----------------------------
-INSERT INTO "public"."RoomTask" VALUES (1, 15, 'Test 1', 'Test task', '2023-09-25 03:00:00', '2023-10-01 19:48:41');
-INSERT INTO "public"."RoomTask" VALUES (2, 15, 'Test 2', 'Test task', '2023-09-26 03:00:00', '2023-10-02 19:48:41');
-INSERT INTO "public"."RoomTask" VALUES (3, 15, 'Test 3', 'Test task', '2023-09-27 03:00:00', '2023-10-03 19:52:33');
-INSERT INTO "public"."RoomTask" VALUES (4, 15, 'Test 4', 'Test task', '2023-09-28 03:00:00', '2023-10-04 19:52:56');
-INSERT INTO "public"."RoomTask" VALUES (5, 15, 'Test 5', 'Test task', '2023-09-29 03:00:00', '2023-10-05 19:53:16');
-INSERT INTO "public"."RoomTask" VALUES (6, 15, 'Test 6', 'Test task', '2023-09-30 03:00:00', '2023-10-06 19:53:38');
-INSERT INTO "public"."RoomTask" VALUES (7, 15, 'Test 7', 'Test task', '2023-10-01 13:42:26', '2023-10-07 13:42:52');
-INSERT INTO "public"."RoomTask" VALUES (8, 15, 'Test 8', 'Test task', '2023-10-02 13:42:32', '2023-10-08 13:42:58');
-INSERT INTO "public"."RoomTask" VALUES (9, 15, 'Test 9', 'Test task', '2023-10-03 13:42:36', '2023-10-09 13:43:02');
-INSERT INTO "public"."RoomTask" VALUES (10, 15, 'Test 10', 'Test task', '2023-10-04 13:42:39', '2023-10-10 13:43:05');
-INSERT INTO "public"."RoomTask" VALUES (11, 15, 'Test 11', 'Test task', '2023-10-05 13:42:43', '2023-10-11 13:43:08');
-INSERT INTO "public"."RoomTask" VALUES (12, 15, 'Test 12', 'Test task', '2023-10-06 13:42:45', '2023-10-12 13:43:10');
-INSERT INTO "public"."RoomTask" VALUES (13, 15, 'Test 13', 'Test task', '2023-10-07 13:42:49', '2023-10-13 13:43:14');
-INSERT INTO "public"."RoomTask" VALUES (14, 15, 'Test task from room', 'fgdhhhhhhhhhhhhhhhhhhhhhhhhhhhfdgh', '2023-10-31 23:34:00', '2023-10-28 20:34:36.680936');
-INSERT INTO "public"."RoomTask" VALUES (15, 15, 'Test taask', 'test task', '2023-11-25 20:25:00', '2023-11-23 17:26:05.424667');
-INSERT INTO "public"."RoomTask" VALUES (16, 15, 'hjjhgjghjy', 'hgjghjgh', '2023-11-17 01:38:00', '2023-11-29 22:38:56.712157');
-INSERT INTO "public"."RoomTask" VALUES (17, 15, 'Test taaaaaaaaaaask', 'm', '2023-11-25 01:40:00', '2023-11-29 22:40:11.15426');
-INSERT INTO "public"."RoomTask" VALUES (18, 15, 'gfhgfghgfhfgh', 'fghgfhhfgfghfgh', '2023-12-10 01:47:00', '2023-11-29 22:47:47.834417');
 
 -- ----------------------------
 -- Table structure for RoomTaskComment
@@ -465,23 +398,6 @@ CREATE TABLE "public"."RoomTaskComment" (
 -- ----------------------------
 -- Records of RoomTaskComment
 -- ----------------------------
-INSERT INTO "public"."RoomTaskComment" VALUES (1, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-01 22:25:58');
-INSERT INTO "public"."RoomTaskComment" VALUES (4, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-02 22:29:12');
-INSERT INTO "public"."RoomTaskComment" VALUES (5, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-03 22:29:18');
-INSERT INTO "public"."RoomTaskComment" VALUES (6, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-04 22:29:24');
-INSERT INTO "public"."RoomTaskComment" VALUES (7, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-05 22:29:30');
-INSERT INTO "public"."RoomTaskComment" VALUES (8, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-06 22:29:37');
-INSERT INTO "public"."RoomTaskComment" VALUES (9, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-07 22:29:45');
-INSERT INTO "public"."RoomTaskComment" VALUES (10, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-08 22:29:52');
-INSERT INTO "public"."RoomTaskComment" VALUES (11, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-09 22:30:00');
-INSERT INTO "public"."RoomTaskComment" VALUES (12, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-10 22:30:08');
-INSERT INTO "public"."RoomTaskComment" VALUES (13, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-11 22:30:15');
-INSERT INTO "public"."RoomTaskComment" VALUES (14, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-12 22:30:22');
-INSERT INTO "public"."RoomTaskComment" VALUES (15, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-13 22:30:29');
-INSERT INTO "public"."RoomTaskComment" VALUES (16, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-14 22:30:38');
-INSERT INTO "public"."RoomTaskComment" VALUES (17, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-17 22:30:46');
-INSERT INTO "public"."RoomTaskComment" VALUES (18, 1, 5, 'TestTestTestTestTestTestTestTestTestTest', '2023-11-18 22:30:54');
-INSERT INTO "public"."RoomTaskComment" VALUES (30, 1, 5, 'TestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest', '2023-11-30 22:32:20');
 
 -- ----------------------------
 -- Table structure for RoomTaskVariant
@@ -499,8 +415,6 @@ CREATE TABLE "public"."RoomTaskVariant" (
 -- ----------------------------
 -- Records of RoomTaskVariant
 -- ----------------------------
-INSERT INTO "public"."RoomTaskVariant" VALUES (1, 1, 1, 'D:/TES/tasks/15/1/1', 'First variant of first task.');
-INSERT INTO "public"."RoomTaskVariant" VALUES (4, 15, 1, 'D:/TES/tasks/15/15/1', 'Первый варик');
 
 -- ----------------------------
 -- Function structure for create_customer_notification_table
@@ -2001,14 +1915,14 @@ SELECT setval('"public"."Role_roleID_seq"', 9, true);
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"
 OWNED BY "public"."RoomCustomerMessageRecipient"."roomCustomerMessageRecipientID";
-SELECT setval('"public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"', 20, true);
+SELECT setval('"public"."RoomCustomerMessageRecipient_roomCustomerMessageRecipientID_seq"', 21, true);
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "public"."RoomCustomerMessage_roomCustomerMessageID_seq"
 OWNED BY "public"."RoomCustomerMessage"."roomCustomerMessageID";
-SELECT setval('"public"."RoomCustomerMessage_roomCustomerMessageID_seq"', 21, true);
+SELECT setval('"public"."RoomCustomerMessage_roomCustomerMessageID_seq"', 22, true);
 
 -- ----------------------------
 -- Alter sequences owned by
